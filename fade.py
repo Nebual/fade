@@ -1,4 +1,4 @@
-import os, sys, pickle, time
+import os, sys, pickle, time, random
 from cStringIO import StringIO
 from optparse import OptionParser
 try: import readline #Importing this enables up/down arrows in Linux
@@ -77,22 +77,28 @@ def parseCMD(msg):
 		if "backpack" in States:
 			print("You stop and look at the contents of your leather backpack:")
 			for item in Inventory.values():
-				print("\t["+item+"]")
+				print("\t- "+item)
 		else:
 			say("There isn't anything in your pockets. You try to start missions light.")
 	elif cmd == "" or (cmd in LOOK and len(cmds) == 1):
 		States["area"].describe()
+	elif cmd in ("back", "return", "last") or "go back" in msg:
+		if "lastarea" in States: rooms.setArea(States["lastarea"])
+		else: say("You just walked into the building, you can't leave yet.")
 	elif cmd in GO:
 		States["area"].GO(cmd, cmds, msg)
 	elif cmd in LOOK:
-		States["area"].LOOK(cmd, cmds, msg)
+		if "clock" in msg and States["area"].clock:
+			say(States["area"].clock % rooms.getTime())
+		else:
+			States["area"].LOOK(cmd, cmds, msg)
 	elif cmd in GET:
 		States["area"].GET(cmd, cmds, msg)
 	elif cmd in USE:
-		States["area"].USE(cmd, cmds, msg)
-	elif cmd in ("back", "return", "last"):
-		if "lastarea" in States: rooms.setArea(States["lastarea"])
-		else: say("You just walked into the building, you can't leave yet.")
+		if "magazine" in Inventory and "magazine" in msg:
+			say("Is now the best time to be doing that?")
+		else:
+			States["area"].USE(cmd, cmds, msg)
 	elif "bumbl" in cmd:
 		say("Bumbling around into furniture isn't really productive."
 			"Besides, you're supposed to follow leave no trace when Seeking.")
@@ -104,10 +110,12 @@ def main():
 		msg = SearchableString(raw_input("\n["+States["area"].__class__.__name__+"]--> ").lower())
 		print("")
 		
-		with listenPrints() as out:
+		with listenPrints() as printedString:
 			parseCMD(msg)
 
-		if not out[0]:
+		if printedString[0]:
+			States["time"] += 5 #Successful actions take 5 minutes
+		else:
 			rooms.notFound(msg.split())
 
 if __name__ == "__main__":
@@ -136,6 +144,7 @@ if __name__ == "__main__":
 
                [Start Game]
 """)
+		rooms.playSound("sounds/ps1start.wav")
 
 		greyscale = [
 			".,-",
@@ -147,33 +156,33 @@ if __name__ == "__main__":
 			"W8KMA",
 			"#%$"
 			]
-		import time, os, random
-		for t in range(1,4*5):
-			width = (t//4)*3
+		for t in range(1,5*5):
+			width = (t//5)*3 #Every 4 ticks, increase doorframe width by 3
 			s = ""
-			for y in range(-17,13):
-				for x in range(-40,40):
+			for y in range(-17,13): #Offset from -15,-15 so the door ends at the bottom of the screen
+				for x in range(-39,39):
 					picked = 5
 					for i in range(5):
 						if abs(x) < (width+4*i) and abs(y) < (width+3*i):
 							picked = i
 							break
 					s += random.choice(greyscale[picked])
-					
-					#s+=random.choice(greyscale[min(7,max(0, int((abs(x/2.0)+abs(y/1.5))*(7.0/20.0) - t//10)))])
 				s+="\n"
 			os.system(os.name == "nt" and "cls" or "clear")
 			print(s)
 			time.sleep(0.18)
-		time.sleep(0.6)
+		time.sleep(0.8)
 		os.system(os.name == "nt" and "cls" or "clear")
-		time.sleep(0.4)
-		
-		with charByChar(speed=0.04):
-			rooms.setArea("lobby")
+		time.sleep(0.3)
 		
 	if "area" not in States:
-		rooms.setArea("lobby")
+		#New game!
+		States["time"] = 9*60
+		if options.showintro:
+			with charByChar(speed=0.04):
+				rooms.setArea("lobby")
+		else:
+			rooms.setArea("lobby")
 	
 	WasKBInterrupt = False
 	try:
