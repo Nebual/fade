@@ -1,9 +1,12 @@
 import os, sys, textwrap, re, time, random, inspect
 
+import lockpick
+
 GO = ("enter", "go", "goto")
 LOOK = ("examine", "look")
 GET = ("pick", "grab", "get", "take")
 USE = ("use",)
+LOCKPICK = ("lockpick",)
 
 Areas = {}
 States = {}
@@ -55,7 +58,7 @@ else:
 
 notFounds = (
 	("You attempt to %s %s, but can't see how.","Despite how great it might be to %s %s, you don't see it.", "%s %s, you cannot."),
-	("You look around feverently for this %s, but find nothing of the sort.","Your attempts to find %s have been entirely unfruitful.","Your %s viewing abilities are quite compromised.","As insightful as looking at %s may be, you don't see it.", "%s %s, you cannot."),
+	("You look around feverently for this %s, but find nothing of the sort.","Your attempts to find %s have been entirely unfruitful.","Your %s viewing abilities are quite compromised.","As insightful as looking at %s may be, you don't see it.", "See %s, you cannot."),
 	("You don't see what using %s would accomplish.","You failed in your attempt to use %s. Good job!", "Use %s, you cannot."),
 	("You don't think you can %s %s.","%s %s, you cannot.", "You would seriously want to %s %s?"),
 	("You're not sure what '%s' entails.", "You try your best to '%s', but nothing happens.", "You don't think you were ever trained to '%s'"),
@@ -66,7 +69,6 @@ def notFound(cmds):
 		if len(cmds) == 1: say("As a 3 dimensional being, you can only go to places, you cannot just 'Go' in general.")
 		else: 
 			say(random.choice(notFounds[0]) % (cmds[0], contents))
-			say("You attempt to "+cmds[0]+" "+contents+", but can't see how.")
 	elif cmds[0] in LOOK:
 		say(random.choice(notFounds[1]) % (contents))
 	elif cmds[0] in USE:
@@ -77,6 +79,8 @@ def notFound(cmds):
 		if len(cmds) == 1: say("You just don't get 'it'. You'll have to settle for "+cmds[0]+"ing specific things.")
 		else:
 			say(random.choice(notFounds[3]) % (cmds[0], contents))
+	elif cmds[0] in LOCKPICK:
+		say("You use your Booker's scanner on %s, but there's too much interference; you can't get a 3D model." % (contents))
 	else:
 		say(random.choice(notFounds[4]) % (cmds[0]))
 
@@ -92,7 +96,13 @@ def setArea(newArea):
 		States["area"].describe()
 
 class Room(object):
-	pass
+	def describe(self): say(""" """)
+	def GO(self, cmd, cmds, msg): pass
+	def LOOK(self, cmd, cmds, msg): pass
+	def GET(self, cmd, cmds, msg): pass
+	def USE(self, cmd, cmds, msg): pass
+	def LOCKPICK(self, cmd, cmds, msg): pass
+
 
 class Test(Room):
 	"""Test is a developer room, for experimenting with inventory, states, etc. It also is connected to every room."""
@@ -137,24 +147,35 @@ class Example(Room):
 			say("Use "+cmds[1]+" on what?")  
 	
 class Lobby(Room):
-	clock = "The old grandfather clock behind the receptionist's desk declares: %s"
 	def describe(self):
-		say("You're in the lobby of a hotel. The room is lavishly decorated." +
+		say("""You're in the lobby of a hotel; the room is lavishly decorated.
+			.
+			There's an old grandfather clock, its 3m cabinet towering over the rest of the room, still ticking away after all these years.""" + 
 			("backpack" not in States and "You see a backpack lying against the wall near the entrance." or "") +
 			("keyfloor" in States and "There's a metal key on the floor near the wall." or "") +
-			".Besides the Entrance, there are doors marked 'Stairs', 'Washrooms', and 'Cafe'")
+			".Besides the Entrance, there are doors marked 'Stairs', 'Washrooms', 'Cafe', 'Supplies', and 'Management'")
 	def GO(self, cmd, cmds, msg):
 		if "stair" in msg:
 			if not "stairdoor" in States:
 				say("The doorknob to the stairs refuses to turn. It is likely locked.")
 			else:
 				setArea("stairs")
-		elif "washroom" in msg:
+		elif ("bathroom", "washroom") in msg:
 			setArea("washroom")
 		elif "cafe" in msg:
 			setArea("cafe")
+		elif "manage" in msg:
+			if "managedoor" not in States:
+				say("The Management door does not wish to be opened. It is likely locked.")
+			else:
+				setArea("management")
 		elif "entrance" in msg:
 			say("You can't leave the hotel, you don't have the Core yet.")
+		elif "suppli" in msg:
+			if "suppliesdoor" not in States:
+				say("The Supplies door is closed, and you can't make it open. It is likely locked.")
+			else:
+				setArea("supplies")
 		elif "test" in msg: setArea("test")
 	def LOOK(self, cmd, cmds, msg):
 		if "pack" in msg:
@@ -170,7 +191,11 @@ class Lobby(Room):
 		elif "stair" in msg:
 			say("""You see the door to the main stairwell. There is a small keyhole on it""")
 		elif ("floor", "ceiling", "walls") in msg:
-			say("The lobby likely looked quite respectable in its time. It doesn't anymore.")
+			say("The lobby likely looked quite respectable in its time. It doesn't anymore." +
+				("keyfloor" in States and "There's a metal key on the floor near the wall." or ""))
+		elif ("clock", "grandf") in msg:
+			say("""You study the old grandfather clock behind the receptionist's desk. The clockface is divided into twelve sections, each representing 1/24th of a day. A second arm further divides the time into 12ths of an hour, though you were fairly certain this era considered there to be 60 minutes to an hour. You synchronize your Booker's clock with your best interpretation of the current local time: """+getTime())
+			States["watch"] = True
 	def GET(self, cmd, cmds, msg):
 		if ("backpack" not in States) and "pack" in msg:
 			say("""You pick up the rugged leather backpack.
@@ -200,18 +225,31 @@ class Lobby(Room):
 					say("The washroom door is already proped open.")
 				elif "manage" in resp:
 					say("The keyhole for the Management door takes a very large key.")
+				elif "suppl" in resp:
+					say("The keyhole for the Supplies door takes a different key.")
 				elif "door" in resp:
 					print("Which door?")
 				else:
 					say("Keys are generally used to open locked things. Not much else.")
 			else:
 				say("Use the key on what?")
+	def LOCKPICK(self, cmd, cmds, msg):
+		if "stair" in msg and "stairdoor" not in States:
+			ret, States["pins"] = lockpick.main(1, States["pins"])
+			if ret:
+				States["stairdoor"] = True
+		elif "suppl" in msg and "suppliesdoor" not in States:
+			ret, States["pins"] = lockpick.main(3, States["pins"])
+			if ret:
+				States["suppliesdoor"] = True
+			
 	
 class Washroom(Room):
 	def describe(self):
 		say("""You're in the first floor washrooms, Men's section.
 			There is a row of water recepticles below a glass mirror, neither of which appear to be in functional condition.
 			There is a wooden shelf, made of a low quality fibre that likely wasn't very attractive when it was new, either.
+			A clipboard is on the wall near the door.
 			.
 			Behind you is the door to the lobby.""")
 	def GO(self, cmd, cmds, msg):
@@ -226,7 +264,11 @@ class Washroom(Room):
 			print("You gaze out the window for a few minutes. You learn little.\n"
 				"The window is opaque. This was largely why.")
 		elif ("sink", "water", "recepticle") in msg:
-			say("The sinks are most certainly not going to flow any time soon.")
+			say("Many of the sinks are most certainly not going to flow any time soon, but surprisingly, one on the end still produces a thin stream of polluted water. You wouldn't want to drink it.")
+		elif "clipboard" in msg:
+			say("The ink has faded to illegibility on the papers" + ("wr_paperclip" not in States and ", but the paperclips may be of use." or ""))
+		elif "paperclip" and "wr_paperclip" not in States in msg:
+			say("The paperclips could be quite handy as lockpicks.")
 		elif "lobby" in msg: 
 			say("The hotel lobby, main entrance room.")
 		elif "floor" in msg:
@@ -246,6 +288,13 @@ class Washroom(Room):
 					the flashlight into your backpack for now.""")
 			else:
 				say("The room is plenty bright enough, and you don't have anywhere to store the flashlight, so you leave it behind.")
+		elif "clip" in msg and "wr_paperclip" not in States:
+			if "backpack" in States:
+				States["wr_paperclip"] = True
+				States["pins"] += 6
+				say("You take the paperclips from the clipboard, and break them of them in half. You now have "+str(States["pins"])+" lockpicking pins.")
+			else:
+				say("You don't have anywhere to put the paperclips. What, you think they'd fit in your pockets or something?")
 	def USE(self, cmd, cmds, msg):
 		pass
 
@@ -329,6 +378,27 @@ class Cafe(Room):
 			say("""Glancing over the input device, you recognize the familar power symbol, and try depressing it.
 				A red light blinks on a few pulses, then disappears. Either the power symbol had a different etimology than you've been taught,
 				or the unit's low on power. Not of much use then.""")
+
+class Management(Room):
+	def describe(self): say("""You're in the lobby's Management office. Theres extraordinarily little described in this room. TODO
+	.
+	Behind you is the door to the lobby.""")
+	def GO(self, cmd, cmds, msg): 
+		if "lobby" in msg: setArea("lobby")
+	def LOOK(self, cmd, cmds, msg): pass
+	def GET(self, cmd, cmds, msg): pass
+	def USE(self, cmd, cmds, msg): pass
+
+class Supplies(Room):
+	def describe(self): say("""You're in the lobby's supplies closet. There are shelves of clean towels, sheets, and headrest envelopes. There are several large electronic metal appliances of unknown purpose.
+	.
+	Behind you is the door to the lobby.""")
+	def GO(self, cmd, cmds, msg):
+		if "lobby" in msg: setArea("lobby")
+	def LOOK(self, cmd, cmds, msg): pass
+	def GET(self, cmd, cmds, msg): pass
+	def USE(self, cmd, cmds, msg): pass
+	def LOCKPICK(self, cmd, cmds, msg): pass
 
 class Stairs(Room):
 	def describe(self):
@@ -420,7 +490,7 @@ class Floor2(Room):
 		elif ("202") in msg:
 			say("The door is surprisingly unlocked.")
 		elif ("203") in msg:
-			say("You turn the handle to no avail.")
+			say("You turn the handle to no avail. Locked.")
 		elif ("elevator") in msg:
 			say("You wouldn't trust the elevator even if it was powered.")
 		elif ("shirt") in msg:
@@ -447,9 +517,9 @@ class Floor2(Room):
 		elif ("linen","towel") in msg:
 			say("As infinitely useful as towels are, you really don't want to raise the dust.")
 		elif ("trash") in msg:
-			say("You decide to leave the trash bin alone.")
+			say("You decide to leave the trash bin alone, else you'd be picking up debris for hours.")
 		elif ("shirt") in msg:
-			say("You leave the shirt where it is to prevent the door from locking shut.")
+			say("You decide to leave the shirt where it is to prevent the door from locking shut.")
 		elif ("flower") in msg:
 			say("The flowers are so dried, a stiff breeze might be enough to obliterate them. You decide against touching them.")
 	def USE(self, cmd, cmds, msg):
@@ -466,7 +536,8 @@ class Room201(Room):
 		.
 		The door to the hallway is held ajar with a shirt.
 		""")
-
+	def GO(self, cmd, cmds, msg):
+		if "hallway" in msg: setArea("floor2")
 	def LOOK(self, cmd, cmds, msg):
 		if ("drawer","stand") in msg:
 			say("The one night stand in the room is empty. It feels like they were in the middle of either packing up or settling in. An old incandescent lamp sits on top aside an unpowered clock.")
@@ -484,6 +555,8 @@ class Room201(Room):
 			say("Specifically you spot a comb, a nutritional bar far beyond its best before date, and some dirty magazines.")
 		elif ("magazines_taken" in States) and ("effects") in msg:
 			say("A comb and an expired nutritional bar lay amongst the clothes. You dig around a bit in case you missed one of those magazines. You were trained to be thorough.")
+		elif ("shirt") in msg:
+			say("The shirt is keeping room 201 open. Better not move it incase the door locks itself.")
 	def GET(self, cmd, cmds, msg):
 		if ("lamp","light") in msg:
 			say("You follow the lamp's cord to the wall and unplug it. However, all attempts to fit the lamp in your knapsack end in failure due to its massive, opulent lampshade.")
@@ -499,9 +572,42 @@ class Room201(Room):
 			Inventory["magazines"] = "Some naughty 'zines from someone's luggage."
 		elif ("magazines_taken" in States) and ("effects") in msg:
 			say("You don't really want any of these things.")
+		elif ("shirt") in msg:
+			say("You leave the shirt where it is to prevent the door from locking shut.")
 	def USE(self, cmd, cmds, msg):
 		if ("lamp") in msg:
 			say("You fiddle with the lamp for a few moments before finding the awkward twist switch just below the bulb. A quick turn in either direction gives no result.")
+
+class Room202(Room):
+	def describe(self):
+		say("""The room is empty.
+		.
+		Like, particularly so.
+		.
+		There are stains covering every square centimeter of the faded wallpaper, and soot stains suggesting a fire was once burning in the middle of the room, but not a trace of any furnishings or decorations remain. Its as if all the damage that should've occured across the second floor was instead concentrated in obliterating this one room in particular.
+		.
+		Behind you is the hallway, and a large hole in the far wall leads to the balcony.
+		""")
+	def GO(self, cmd, cmds, msg):
+		if "hallway" in msg: setArea("floor2")
+		elif ("hole", "balc") in msg: setArea("floor2balcony")
+	def LOOK(self, cmd, cmds, msg):
+		if ("wallpaper", "stains", "soot", "fire"): say("This place is totally wrecked.")
+	def GET(self, cmd, cmds, msg): pass
+	def USE(self, cmd, cmds, msg): pass
+
+class Floor2Balcony(Room):
+	def describe(self):
+		say("""You're standing on a balcony on the second floor of the Hotel.
+		.
+		The desolated landscape spreads out wide before you. The hotel stands at the top edge of a tall escarpment, a testiment to old world egotistical architects.
+		""")
+	def GO(self, cmd, cmds, msg):
+		if ("hole", "202") in msg: setArea("room202")
+	def LOOK(self, cmd, cmds, msg):
+		if ("view"): self.describe()
+	def GET(self, cmd, cmds, msg): pass
+	def USE(self, cmd, cmds, msg): pass
 
 for name, cls in inspect.getmembers(sys.modules[__name__], inspect.isclass):
 	if Room in cls.__bases__:

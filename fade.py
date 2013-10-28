@@ -1,54 +1,13 @@
 import os, sys, pickle, time, random
-from cStringIO import StringIO
 from optparse import OptionParser
 try: import readline #Importing this enables up/down arrows in Linux
 except ImportError: pass
 
+sys.path.append("..")
+import consolelib
+
 import rooms
-from rooms import GO, LOOK, GET, USE, Areas, States, Inventory, say, SearchableString
-stdout_backup = sys.stdout
-
-class mystdout(object):
-	def __init__(self, suppress=False):
-		self.file = StringIO()
-		self.stdout = sys.stdout
-		sys.stdout = self
-		self.suppress = suppress
-	def write(self, data):
-		self.file.write(data)
-		if not self.suppress: self.stdout.write(data)
-	def close(self):
-		s = self.file.getvalue()
-		sys.stdout = self.stdout
-		self.file.close()
-		return s
-
-import contextlib
-#backup_print = print
-@contextlib.contextmanager
-def listenPrints(suppress=False):
-	"""Creates a context that saves all prints to a string, while optionally suppressing them.
-	returns a list containing the string at index 0.
-	with listenPrints() as out: print("lol")
-	"""
-	out = [""]
-	myout = mystdout(suppress=suppress)
-	try:
-		yield out
-	finally:
-		out[0] = myout.close()
-@contextlib.contextmanager
-def charByChar(speed=0.05):
-	"""Creates a context that saves all prints to a string, suppressing them.
-	When context is left, it prints the string char by char.
-	with charByChar(speed=0.1): print("lol")
-	"""
-	with listenPrints(suppress=True) as out:
-		yield out
-	for char in out[0]:
-		sys.stdout.write(char)
-		sys.stdout.flush()
-		time.sleep(speed)
+from rooms import GO, LOOK, GET, USE, LOCKPICK, Areas, States, Inventory, say, SearchableString
 
 def parseCMD(msg):
 	cmds = msg.split(); cmd = SearchableString(len(cmds) > 0 and cmds[0] or "")
@@ -71,15 +30,22 @@ def parseCMD(msg):
 			"examine (look) [object]\n"
 			"grab (pick, get, take) [object]\n"
 			"use [object] on [object]\n"
-			"save/load [savename]\n"
-			"i (inventory)")
+			"lockpick [object]\n"
+			"time\n"
+			"i (inventory)\n"
+			"save/load [savename]")
 	elif cmd in ("i", "inventory"):
 		if "backpack" in States:
 			print("You stop and look at the contents of your leather backpack:")
 			for item in Inventory.values():
 				print("\t- "+item)
+			print "\t- Lockpicking pins: "+str(States["pins"])
+			print "\t- Money: $%.2f" % States["money"]
 		else:
 			say("There isn't anything in your pockets. You try to start missions light.")
+	elif cmd in ("time", "watch"):
+		if "watch" in States: say("You glance at your Booker's display of the current local time: "+rooms.getTime())
+		else: say("Your booker's internal clock hasn't been configured for this locale, and is still displaying your home time: " + str(int(States["time"]/1.44)))
 	elif cmd == "" or (cmd in LOOK and len(cmds) == 1):
 		States["area"].describe()
 	elif cmd in ("back", "return", "last") or "go back" in msg:
@@ -88,8 +54,8 @@ def parseCMD(msg):
 	elif cmd in GO:
 		States["area"].GO(cmd, cmds, msg)
 	elif cmd in LOOK:
-		if "clock" in msg and States["area"].clock:
-			say(States["area"].clock % rooms.getTime())
+		if "booker" in msg:
+			say("The Booker on your arm is an advanced Personal Information Processor. The 2000 model premiered in the year 8AA, and is primarily built from salvaged Old world components modified to support an MF power core. Its many features include a watch, 3D scanner, 1w laser pointer (doubles as a microwelder), journal logging, and flying toasters screensaver.")
 		else:
 			States["area"].LOOK(cmd, cmds, msg)
 	elif cmd in GET:
@@ -99,10 +65,15 @@ def parseCMD(msg):
 			say("Is now the best time to be doing that?")
 		else:
 			States["area"].USE(cmd, cmds, msg)
+	elif cmd in LOCKPICK:
+		if len(cmds) == 1:
+			say("What locked object do you want to pick?")
+		else:
+			States["area"].LOCKPICK(cmd, cmds, msg)
 	elif "bumbl" in cmd:
 		say("Bumbling around into furniture isn't really productive."
-			"Besides, you're supposed to follow leave no trace when Seeking.")
-	elif "break" in cmd:
+			"Besides, you're supposed to follow 'leave no trace' when Seeking.")
+	elif ("break", "kick", "smash") in cmd:
 		say("Seekers can't just go around breaking things, especially not in old ruins.")
 
 def main():
@@ -110,12 +81,13 @@ def main():
 		msg = SearchableString(raw_input("\n["+States["area"].__class__.__name__+"]--> ").lower())
 		print("")
 		
-		with listenPrints() as printedString:
+		with consolelib.listenPrints() as printedString:
 			parseCMD(msg)
 
 		if printedString[0]:
 			States["time"] += 5 #Successful actions take 5 minutes
 		else:
+			#Nothing was printed, so the command/args pair wasn't found
 			rooms.notFound(msg.split())
 
 if __name__ == "__main__":
@@ -168,18 +140,20 @@ if __name__ == "__main__":
 							break
 					s += random.choice(greyscale[picked])
 				s+="\n"
-			os.system(os.name == "nt" and "cls" or "clear")
+			consolelib.clear()
 			print(s)
 			time.sleep(0.18)
 		time.sleep(0.8)
-		os.system(os.name == "nt" and "cls" or "clear")
+		consolelib.clear()
 		time.sleep(0.3)
 		
 	if "area" not in States:
 		#New game!
 		States["time"] = 9*60
+		States["pins"] = 0
+		States["money"] = 3
 		if options.showintro:
-			with charByChar(speed=0.04):
+			with consolelib.charByChar(speed=0.04):
 				rooms.setArea("lobby")
 		else:
 			rooms.setArea("lobby")
