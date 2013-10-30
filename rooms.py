@@ -395,7 +395,8 @@ class Supplies(Room):
 	Behind you is the door to the lobby.""")
 	def GO(self, cmd, cmds, msg):
 		if "lobby" in msg: setArea("lobby")
-	def LOOK(self, cmd, cmds, msg): pass
+	def LOOK(self, cmd, cmds, msg):
+		if ("large", "metal", "applia") in msg: say("You find many of the metal boxes are filled with clothing, left behind by their original owners.")
 	def GET(self, cmd, cmds, msg): pass
 	def USE(self, cmd, cmds, msg): pass
 	def LOCKPICK(self, cmd, cmds, msg): pass
@@ -600,12 +601,36 @@ class Floor2Balcony(Room):
 	def describe(self):
 		say("""You're standing on a balcony on the second floor of the Hotel.
 		.
-		The desolated landscape spreads out wide before you. The hotel stands at the top edge of a tall escarpment, a testiment to old world egotistical architects.
+		The desolated landscape spreads out wide before you. The hotel stands at the top edge of a tall escarpment, a testiment to old world egotistical architects. Theres the ruins of a small town 1km North of you, but the buildings are in considerably worse condition than the Hotel, and besides, the Core isn't there.
+		.
+		If you climb across the balconies, you can reach the door to Room203, and the hole to Room202.
 		""")
 	def GO(self, cmd, cmds, msg):
 		if ("hole", "202") in msg: setArea("room202")
+		elif ("door", "203") in msg:
+			if "room203_balconyunlocked" in States: setArea("room203")
+			else: say("The door to Room203 is most certainly, without a doubt, probably locked. Or jammed. You're leaning towards locked.")
 	def LOOK(self, cmd, cmds, msg):
-		if ("view"): self.describe()
+		if ("view"): say("The view is bleak.")
+		elif ("hole","202"): say("The hole leads to the barren wasteland that is Room202. Its almost nicer in the barren wasteland that is outside.")
+		elif ("door","203"): say("You see a secure looking lock on the door to Room203.")
+	def GET(self, cmd, cmds, msg): pass
+	def USE(self, cmd, cmds, msg): pass
+	def LOCKPICK(self, cmd, cmds, msg):
+		if ("door", "203") and "room203_balconyunlocked" not in States: 
+			ret, States["pins"] = lockpick.main(2, States["pins"])
+			if ret: States["room203_balconyunlocked"] = True
+
+class Room203(Room):
+	def describe(self):
+		say("""Theres lots of cool stuff, but none of it described yet. TODO
+		.
+		There is a door leading to the balcony.
+		""")
+	def GO(self, cmd, cmds, msg):
+		if "hall" in msg: say("The lock on the door to the hallway is smashed beyond use, and unlike in the tapes, this means the door is permanently unopenable.")
+		elif ("balcon") in msg: setArea("floor2balcony")
+	def LOOK(self, cmd, cmds, msg): pass
 	def GET(self, cmd, cmds, msg): pass
 	def USE(self, cmd, cmds, msg): pass
 
