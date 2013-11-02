@@ -107,7 +107,9 @@ class Room(object):
 class Test(Room):
 	"""Test is a developer room, for experimenting with inventory, states, etc. It also is connected to every room."""
 	def describe(self):
-		say("""This is the developer hax room. `go room` runs setArea(room). `get itemname` runs Inventory[itemname] = 'Free item'. `use state' runs States[state] = True. `use state false` runs States[state] = False.""")
+		say("""This is the developer hax room. `go room` runs setArea(room). A hot tub steams in the corner.
+		.
+		`get itemname` runs Inventory[itemname] = 'Free item'. `use state' runs States[state] = True. `use state false` runs States[state] = False.""")
 
 	def GO(self, cmd, cmds, msg):
 		setArea(cmds[1])
@@ -197,7 +199,7 @@ class Lobby(Room):
 			say("""You study the old grandfather clock behind the receptionist's desk. The clockface is divided into twelve sections, each representing 1/24th of a day. A second arm further divides the time into 12ths of an hour, though you were fairly certain this era considered there to be 60 minutes to an hour. You synchronize your Booker's clock with your best interpretation of the current local time: """+getTime())
 			States["watch"] = True
 	def GET(self, cmd, cmds, msg):
-		if ("backpack" not in States) and "pack" in msg:
+		if ("backpack" not in States) and "ack" in msg:
 			say("""You pick up the rugged leather backpack.
 				As you slide it onto your shoulders, you hear the clink of metal hitting the linolium floor.""")
 			States["keyfloor"] = True
