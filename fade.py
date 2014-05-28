@@ -23,6 +23,9 @@ def parseCMD(msg):
 		if SaveName:
 			pickle.dump((States, Inventory), open(SaveName+".sav","wb"))
 			print("== Progress saved to '"+SaveName+".sav' ==")
+	elif cmd in ("clear", "cls"):
+		consolelib.clear()
+		print " "
 	elif cmd == "help":
 		print ("You consider for a moment the verbs you've learned:\n"
 			"go (enter) [room]\n"
@@ -54,7 +57,7 @@ def parseCMD(msg):
 	elif cmd in GO:
 		States["area"].GO(cmd, cmds, msg)
 	elif cmd in LOOK:
-		if "booker" in msg:
+		if ("booker", "arm") in msg:
 			say("The Booker on your arm is an advanced Personal Information Processor. The 2000 model premiered in the year 8AA, and is primarily built from salvaged Old world components modified to support an MF power core. Its many features include a watch, 3D scanner, 1w laser pointer (doubles as a microwelder), journal logging, and flying toasters screensaver.")
 		else:
 			States["area"].LOOK(cmd, cmds, msg)
@@ -63,6 +66,8 @@ def parseCMD(msg):
 	elif cmd in USE:
 		if "magazine" in Inventory and "magazine" in msg:
 			say("Is now the best time to be doing that?")
+		elif "crochetagebook" in Inventory and "crochet" in msg:
+			say("You flip through the booklet, but you can't understand the wording. The diagrams detail the basics of picking locks.")
 		else:
 			States["area"].USE(cmd, cmds, msg)
 	elif cmd in LOCKPICK:
@@ -152,11 +157,7 @@ if __name__ == "__main__":
 		States["time"] = 9*60
 		States["pins"] = 0
 		States["money"] = 3
-		if options.showintro:
-			with consolelib.charByChar(speed=0.04):
-				rooms.setArea("lobby")
-		else:
-			rooms.setArea("lobby")
+		rooms.setArea("lobby")
 	
 	WasKBInterrupt = False
 	try:
