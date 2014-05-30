@@ -6,8 +6,8 @@ except ImportError: pass
 sys.path.append("..")
 import consolelib
 
+from roomCommon import say, SearchableString, playSound, getTime, setArea, notFound, GO, LOOK, GET, USE, LOCKPICK, Areas, States, Inventory
 import rooms
-from rooms import GO, LOOK, GET, USE, LOCKPICK, Areas, States, Inventory, say, SearchableString
 
 def parseCMD(msg):
 	cmds = msg.split(); cmd = SearchableString(len(cmds) > 0 and cmds[0] or "")
@@ -47,12 +47,12 @@ def parseCMD(msg):
 		else:
 			say("There isn't anything in your pockets. You try to start missions light.")
 	elif cmd in ("time", "watch"):
-		if "watch" in States: say("You glance at your Booker's display of the current local time: "+rooms.getTime())
+		if "watch" in States: say("You glance at your Booker's display of the current local time: "+getTime())
 		else: say("Your booker's internal clock hasn't been configured for this locale, and is still displaying your home time: " + str(int(States["time"]/1.44)))
 	elif cmd == "" or (cmd in LOOK and len(cmds) == 1):
 		States["area"].describe()
 	elif cmd in ("back", "return", "last") or "go back" in msg:
-		if "lastarea" in States: rooms.setArea(States["lastarea"])
+		if "lastarea" in States: setArea(States["lastarea"])
 		else: say("You just walked into the building, you can't leave yet.")
 	elif cmd in GO:
 		States["area"].GO(cmd, cmds, msg)
@@ -93,7 +93,7 @@ def main():
 			States["time"] += 5 #Successful actions take 5 minutes
 		else:
 			#Nothing was printed, so the command/args pair wasn't found
-			rooms.notFound(msg.split())
+			notFound(msg.split())
 
 if __name__ == "__main__":
 	parser = OptionParser()
@@ -121,7 +121,7 @@ if __name__ == "__main__":
 
                [Start Game]
 """)
-		rooms.playSound("sounds/ps1start.wav")
+		playSound("sounds/ps1start.wav")
 
 		greyscale = [
 			".,-",
@@ -157,7 +157,7 @@ if __name__ == "__main__":
 		States["time"] = 9*60
 		States["pins"] = 0
 		States["money"] = 3
-		rooms.setArea("lobby")
+		setArea("lobby")
 	
 	WasKBInterrupt = False
 	try:
