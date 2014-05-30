@@ -7,7 +7,7 @@ sys.path.append("..")
 import consolelib
 
 from roomCommon import say, SearchableString, playSound, getTime, setArea, notFound, GO, LOOK, GET, USE, LOCKPICK, Areas, States, Inventory
-import rooms
+import hotel
 
 def parseCMD(msg):
 	cmds = msg.split(); cmd = SearchableString(len(cmds) > 0 and cmds[0] or "")
