@@ -1,6 +1,6 @@
 import os, sys, time, random
 import lockpick, consolelib
-from roomCommon import say, Areas, States, Inventory, getTime, setArea, Room, loadRoomModule
+from roomCommon import say, Areas, States, Inventory, SearchableString, getTime, setArea, Room, loadRoomModule
 
 	
 class Lobby(Room):
@@ -149,7 +149,7 @@ class Washroom(Room):
 		if "flashlight" in msg and "wr_flashlight_taken" not in States:
 			if "backpack" in States:
 				States["wr_flashlight_taken"] = True
-				Inventory["flashlight"] = "An old portable electronic light source, Lithium Ion power source."
+				Inventory["flashlight"] = "An old portable electronic light, with a Lithium Ion power source."
 				say("""You pick up the flashlight off the shelf. With a crash that echoes into the lobby,
 					a shelf loses its integrity and tumbles to the floor. Petrified, you pause for a moment to listen, but there's 
 					no further disturbences. The light coming from the washroom window is bright enough, so you put
@@ -230,11 +230,12 @@ class Cafe(Room):
 			say("""You take the "SUPLISE" key from the jacket.""")
 			Inventory["suppliesdoorkey"] = """A key found in the Cafe, it has "SUPLISE" carved into it."""
 			States["cafe_key_pickup"] = True
-		elif ("computer", "laptop", "terminal") in msg and "laptop_cafe_obtained" not in States:
+		elif ("computer", "laptop", "terminal") in msg:
 			if "laptop_cafe_powered" not in States:
 				say("""The portable terminal would probably fit in your backpack, but it wouldn't be any use without power. You're quite thankful
 					your Booker is more reliable, even if the thermoelectric makes it a little cool around the arm.
 					Old tech required much more power.""")
+			else: say("""You're unsure what use the heavy terminal would be to you at this point, as the interface seems to be stuck.""")
 	def USE(self, cmd, cmds, msg):
 		if "flashlight" in msg:
 			if "flashlight" in Inventory:
@@ -252,15 +253,54 @@ class Cafe(Room):
 			say("You can't see anything. it's pitch black.")
 		elif ("chair", "table") in msg:
 			say("You really don't want to sit down in those chairs.")
-		elif ("computer", "laptop", "terminal") in msg and "laptop_cafe_obtained" not in States:
-			say("""Glancing over the input device, you recognize the familar power symbol, and try depressing it.
+		elif ("charge", "black", "cable") in msg and "charger" in Inventory:
+			if ("computer", "laptop", "terminal") in msg:
+				States["laptop_cafe_powered"] = True
+				self.USE("","",SearchableString("computer"))
+			else: say("Use the cable with what?")
+		elif ("computer", "laptop", "terminal") in msg:
+			if "laptop_cafe_powered" not in States:
+				say("""Glancing over the input device, you recognize the familar power symbol, and try depressing it.
 				A red light blinks on a few pulses, then disappears. Either the power symbol had a different etimology than you've been taught,
 				or the unit's low on power. Not of much use then.""")
+			else:
+				say("""One of the 5 tips of the cable seems to fit into the portable terminal, and when you plug the other end into a socket on the side of the table, the device lights up. A picture of a wheel spins in the center of the display for a few moments, followed by an interface you're actually familiar with. """)
+				raw_input("...")
+				print("""\
+========================================================================
+===/      Gmail /=======================================================
+==                                                                    ==
+= <     Place is Heating Up                                            =
+=  From: wclark@marylandwaterworks.com           Oct 11th 2014         =
+=---------------------------------------------                         =
+=     Okay so you know we got that government contract to redo an      =
+= office's sinks? Turns out it was actually the Whitehouse itself, and =
+= people are really freaking out around here today. Something about    =
+= a navy ship, possibly a submarine, being seized by extremists. I'd   =
+= have thought that'd be standard fare for this place, but they've     =
+= sent home quite a few of the non-essential staff early, and that     =
+= can't be a good sign. My train doesn't leave for another few hours,  =
+= so I figured I'd keep working, but the atmosphere was too weird for  =
+= me to not send it your way, so let me know if you can find anything  =
+= about it in the usual places. I can't imagine what they'd have on    =
+= the boat that would threaten us here, I mean we have jets that can   =
+= stop nuclear missiles, right? What could be worse than that?         =
+=                                        ------------------------------=
+==                                       - Reply -   - Fwd-           ==
+========================================================================""")
+				raw_input("...")
+				say("""Amazing! An email from before the Collapse! After copying the contents into your Booker for perpetuity, you hit the keyboard's Back button to return to the list of emails.""")
+				raw_input("...")
+				say("""Nothing changes. The computer seems to have frozen. A shame, but you don't have time to try fixing it this trip.
+				.
+				The power cable could be useful for other things, so you take it with you.""")
+
 
 class Supplies(Room):
 	def describe(self): say("""You're in the lobby's supplies closet. There are shelves of clean towels, sheets, and headrest envelopes. There are several large electronic metal appliances of unknown purpose. """
 	+ ("managementkey" not in Inventory and "There's a key hanging by the door." or "") + """
-	There is a dish containing some small metal discs, """ + ("suppliesroom_lockpicks" in State and ", " or "several paperclips, ") + """small pieces of polymer, """ + ("suppliesroom_money" in State and ", " or """a paper with "5 IN GOD WE TRUST 5" written on it, """) + """and some metal screws.
+	There is a dish containing some small metal discs, """ + ("suppliesroom_lockpicks" in States and ", " or "several paperclips, ") + """small pieces of polymer, """ + ("suppliesroom_money" in States and ", " or """a paper with "5 IN GOD WE TRUST 5" written on it, """) + """and some metal screws.
+	Sunk into the wall is a mahogany cupboard labeled 'LOST TREBLECLEF FOUND'; it looks like it might be locked. 
 	.
 	Behind you is the door to the lobby.""")
 	def GO(self, cmd, cmds, msg):
@@ -269,23 +309,50 @@ class Supplies(Room):
 		if ("large", "metal", "applia") in msg: say("You find many of the metal boxes are filled with clothing, left behind by their original owners.")
 		elif "key" in msg and "managementkey" not in Inventory: say("""Theres a large key hanging from a post. It has a tag on it reading "Mngnt".""")
 		elif ("screw", "poly", "disc") in msg: say("Just some junk, probably.")
-		elif ("paper", "5", "god", "money") in msg and "suppliesroom_money" not in State:
-			say("These papers were used to anonymously transfer credits, as part of business.")
-		elif ("lockpi", "clip") in msg and "suppliesroom_lockpicks" not in State:
+		elif ("paper", "5", "god", "money") in msg and "suppliesroom_money" not in States:
+			say("If your memory serves you correctly, these papers were used to anonymously transfer credits, as part of business.")
+		elif ("lockpi", "clip") in msg and "suppliesroom_lockpicks" not in States:
 			say("Hey sweet some paperclips! More lockpicks means less hunting down keys.")
+		elif "treble" in msg: say("This is a really badly drawn trebleclef.")
+		elif ("mahog", "cupbo", "lost", "found") in msg:
+			if "supplyLAFcupboardunlocked" in States:
+				say("On a shelf inside the cupboard is a small pair of children's shoes" + ("supplyLAFbottletaken" not in States and " and a hydration bottle." or ".") + ("supplyLAFchargertaken" not in States and "There is a length of black cable with metal pins on both ends." or ""))
+			else: say("Its a nice cabinet, but its locked.")
+		elif ("black", "cable", "plug") in msg and "supplyLAFcupboardunlocked" in States:
+			say("One end of the cable has a plug with 3 metal pins, the other end splits into 5 smaller wires, each with a differently shaped single metal pin. Versatile?")
+		elif ("shoe") in msg: say("How the parents didn't notice the missing shoes is beyond you.")
+		elif ("hydra", "water", "bottle") in msg and "supplyLAFcupboardunlocked" in States: say("The bottle looks like it'd hold about 1000 cubic cm, and since you lost your hydrater when that school collapsed, it'd probably be a good thing to take along.")
 	def GET(self, cmd, cmds, msg):
 		if "key" in msg and "managementkey" not in Inventory:
 			say("""You pickup the "Mngnt" key and toss it haphazardly into your backpack.""")
 			Inventory["managementkey"] = """A large key with a tag reading "Mngnt" """
-		elif ("paper", "5", "god", "money") in msg and "suppliesroom_money" not in State:
+		elif ("paper", "5", "god", "money") in msg and "suppliesroom_money" not in States:
 			say("You pickup the 5 credits bill. Or 5 dollars, you should say.")
-			State["money"] += 5
-			State["suppliesroom_money"] = True
-		elif ("lockpi", "clip") in msg and "suppliesroom_lockpicks" not in State:
+			States["money"] += 5
+			States["suppliesroom_money"] = True
+		elif ("lockpi", "clip") in msg and "suppliesroom_lockpicks" not in States:
 			say("You snap the 3 paperclips in half, and somehow end up with 5 more lockpicks!")
-			State["pins"] += 5
-			State["suppliesroom_lockpicks"] = True
-	def USE(self, cmd, cmds, msg): pass
+			States["pins"] += 5
+			States["suppliesroom_lockpicks"] = True
+		elif ("shoe") in msg: say("The shoes are, by a large margin, too small for your feet.")
+		elif ("hydra", "water", "bottle") in msg and "supplyLAFcupboardunlocked" in States and "supplyLAFbottletaken" not in States:
+			States["supplyLAFbottletaken"] = True
+			Inventory["waterbottle"] = "A 1000 cubic cm hydration bottle, full of water."
+			say("You pickup the bottle, and place it in your backpack.")
+		elif ("black", "cable", "plug") in msg and "supplyLAFcupboardunlocked" in States and "supplyLAFchargertaken" not in States:
+			States["supplyLAFchargertaken"] = True
+			Inventory["charger"] = "A power cable with 5 tips."
+			say("You pickup the cable, and place it in your backpack.")
+	def USE(self, cmd, cmds, msg):
+		if "key" in msg:
+			if len(cmds) > 3:
+				if ("mahog", "cupbo", "lost", "found") in msg and "supplyLAFcupboardunlocked" not in States and "managementkey" in Inventory:
+					States["supplyLAFcupboardunlocked"] = True
+					say("Using the key that you found an arms length away, you unlock the cupboard.")
+				else:
+					say("Keys are generally used to open locked things. Not much else.")
+			else:
+				say("Use the key on what?")
 	def LOCKPICK(self, cmd, cmds, msg): pass
 
 class Stairs(Room):
