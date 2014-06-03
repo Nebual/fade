@@ -11,6 +11,7 @@ import hotel
 
 def parseCMD(msg):
 	cmds = msg.split(); cmd = SearchableString(len(cmds) > 0 and cmds[0] or "")
+	curArea = Areas[States["area"]]
 	if cmd == "load":
 		SaveName = len(cmds) > 1 and cmds[1] or raw_input("Save name: >")
 		if SaveName:
@@ -50,31 +51,34 @@ def parseCMD(msg):
 		if "watch" in States: say("You glance at your Booker's display of the current local time: "+getTime())
 		else: say("Your booker's internal clock hasn't been configured for this locale, and is still displaying your home time: " + str(int(States["time"]/1.44)))
 	elif cmd == "" or (cmd in LOOK and len(cmds) == 1):
-		States["area"].describe()
+		curArea.describe()
 	elif cmd in ("back", "return", "last") or "go back" in msg:
 		if "lastarea" in States: setArea(States["lastarea"])
 		else: say("You just walked into the building, you can't leave yet.")
 	elif cmd in GO:
-		States["area"].GO(cmd, cmds, msg)
+		curArea.GO(cmd, cmds, msg)
 	elif cmd in LOOK:
 		if ("booker", "arm") in msg:
 			say("The Booker on your arm is an advanced Personal Information Processor. The 2000 model premiered in the year 8AA, and is primarily built from salvaged Old world components modified to support an MF power core. Its many features include a watch, 3D scanner, 1w laser pointer (doubles as a microwelder), journal logging, and flying toasters screensaver.")
 		else:
-			States["area"].LOOK(cmd, cmds, msg)
+			curArea.LOOK(cmd, cmds, msg)
 	elif cmd in GET:
-		States["area"].GET(cmd, cmds, msg)
+		curArea.GET(cmd, cmds, msg)
 	elif cmd in USE:
-		if "magazine" in Inventory and "magazine" in msg:
+		with consolelib.listenPrints() as printedString:
+			curArea.USE(cmd, cmds, msg)
+		if printedString[0]: pass
+		elif "magazine" in Inventory and "magazine" in msg:
 			say("Is now the best time to be doing that?")
 		elif "crochetagebook" in Inventory and "crochet" in msg:
-			say("You flip through the booklet, but you can't understand the wording. The diagrams detail the basics of picking locks.")
-		else:
-			States["area"].USE(cmd, cmds, msg)
+			say("You flip through the booklet, but you can't understand the language. The diagrams detail the basics of picking locks.")
+		elif ("water", "hydra", "bottle") in msg and "waterbottle" in Inventory:
+			say("You're not thirsty at the moment.")
 	elif cmd in LOCKPICK:
 		if len(cmds) == 1:
 			say("What locked object do you want to pick?")
 		else:
-			States["area"].LOCKPICK(cmd, cmds, msg)
+			curArea.LOCKPICK(cmd, cmds, msg)
 	elif "bumbl" in cmd:
 		say("Bumbling around into furniture isn't really productive."
 			"Besides, you're supposed to follow 'leave no trace' when Seeking.")
@@ -83,7 +87,7 @@ def parseCMD(msg):
 
 def main():
 	while True:
-		msg = SearchableString(raw_input("\n["+States["area"].__class__.__name__+"]--> ").lower())
+		msg = SearchableString(raw_input("\n["+Areas[States["area"]].__class__.__name__+"]--> ").lower())
 		print("")
 		
 		with consolelib.listenPrints() as printedString:

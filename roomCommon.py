@@ -3,7 +3,7 @@ import os, sys, time, random, inspect
 import lockpick, consolelib
 
 Areas = {}
-States = {}
+States = {"area": "lobby"}
 Inventory = {}
 
 
@@ -86,17 +86,17 @@ def getTime():
 	return "%d:%.2d%s" % (((T-60)%720)//60 + 1, T%60, (T%1440) > 720 and "PM" or "AM")
 		
 def setArea(newArea):
-	"""Takes a string, and sets States["area"] to the corresponding Room object."""
+	"""Changes the current room"""
 	if newArea in Areas:
-		if "area" in States: States["lastarea"] = States["area"].name
-		States["area"] = Areas[newArea]
+		if "area" in States: States["lastarea"] = States["area"]
+		States["area"] = newArea
 		if ("visited_" + newArea) in States:
 			with consolelib.charByChar(0.0033):
-				States["area"].describe()
+				Areas[States["area"]].describe()
 		else:
 			States["visited_" + newArea] = True
 			with consolelib.charByLine(0.0125):
-				States["area"].describe()
+				Areas[States["area"]].describe()
 
 class Room(object):
 	def describe(self): say(""" """)
