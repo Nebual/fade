@@ -264,7 +264,7 @@ class Cafe(Room):
 				A red light blinks on a few pulses, then disappears. Either the power symbol had a different etimology than you've been taught,
 				or the unit's low on power. Not of much use then.""")
 			else:
-				say("""One of the 5 tips of the cable seems to fit into the portable terminal, and when you plug the other end into a socket on the side of the table, the device lights up. A picture of a wheel spins in the center of the display for a few moments, followed by an interface you're actually familiar with. """)
+				say("""The Core can wait. One of the 5 tips of the cable seems to fit into the portable terminal, and when you plug the other end into a socket on the side of the table, the device lights up. A picture of a wheel spins in the center of the display for a few moments, followed by an interface you're actually familiar with. """)
 				raw_input("...")
 				print("""\
 ========================================================================
@@ -306,7 +306,7 @@ class Supplies(Room):
 	def GO(self, cmd, cmds, msg):
 		if "lobby" in msg: setArea("lobby")
 	def LOOK(self, cmd, cmds, msg):
-		if ("large", "metal", "applia") in msg: say("You find many of the metal boxes are filled with clothing, left behind by their original owners.")
+		if ("large", "metal", "applia") in msg: say("You find many of the metal boxes are filled with clothing, left behind by their original owners. You do not find the Core in any of them.")
 		elif "key" in msg and "managementkey" not in Inventory: say("""Theres a large key hanging from a post. It has a tag on it reading "Mngnt".""")
 		elif ("screw", "poly", "disc") in msg: say("Just some junk, probably.")
 		elif ("paper", "5", "god", "money") in msg and "suppliesroom_money" not in States:
@@ -387,6 +387,7 @@ class Stairs(Room):
  /_________/ /
 |_________|/\n""")
 			say("It is firmly wedged in the stair railing; you won't be able to move it, though if you still had your plasma cutter you could easily cut a hole through it.")
+		elif ("basement", "below") in msg: say("You could go down there, but you wouldn't be able to get back up. On the plus side, its pretty unlikely the Core is down there.")
 	def GET(self, cmd, cmds, msg):
 		if ("stairs_fish" not in States) and "fish" in msg:
 			say("You pick up the fish, turn it over a few times, and drop it in your backpack. You're not sure what to make of yourself.")
@@ -511,7 +512,7 @@ class Room201(Room):
 		elif ("bed") in msg:
 			say("The bedding is messy but looks comfortable enough. A small open suitcase sits on top with clothing and personal effects spilling from it.")
 		elif ("luggage","suitcase") in msg:
-			say("Clothing and personal effects are spilling from the luggage.")
+			say("Clothing and personal effects are spilling from the luggage. It's not like there's going to be a portable power generator just sitting in a suitcase.")
 		elif ("clothing") in msg:
 			say("None of the clothing is particularly interesting to you.")
 		elif ("magazines_taken" not in States) and ("effects") in msg:
@@ -575,7 +576,7 @@ class Floor2Balcony(Room):
 			else: say("The door to Room203 is most certainly, without a doubt, probably locked. Or stuck. You're leaning towards locked.")
 	def LOOK(self, cmd, cmds, msg):
 		if ("view") in msg: say("The view is bleak.")
-		elif "hotel" in msg: say("You turn away from the interesting view to look at the boring side of the building. Theres at least one floor above you, judging by the next balcony up, but beyond that nothing stands out.")
+		elif "hotel" in msg: say("You turn away from the interesting view to look at the boring side of the building. Theres at least one floor above you, judging by the next balcony up, but beyond that nothing stands out. Doesn't mean the Core isn't up there though.")
 		elif "town" in msg: say("You spy a large sign by the road leading into the town. Squinting through the dust clouds, you read 'Wapato Welcomes You!'")
 		elif "balcon" in msg: say("The balcony of Room203")
 		elif ("hole","202") in msg: say("The hole leads to the barren wasteland that is Room202. Its almost nicer than the barren wasteland that is outside.")
