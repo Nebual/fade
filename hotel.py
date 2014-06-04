@@ -1,6 +1,6 @@
 import os, sys, time, random
 import lockpick, consolelib
-from roomCommon import say, Areas, States, Inventory, SearchableString, getTime, setArea, Room, loadRoomModule
+from roomCommon import say, Areas, States, Inventory, SearchableString, playSound, getTime, setArea, Room, loadRoomModule
 
 	
 class Lobby(Room):
@@ -194,7 +194,7 @@ class Cafe(Room):
 			say("The food preparation area is part of the Cafe; clearly the architect was a fan of open room design ethos.")
 	def LOOK(self, cmd, cmds, msg):
 		if "flashlighton" not in States:
-			say("You can't see anything. it's pitch black.")
+			say("You can't see anything; it's pitch black.")
 		elif ("box", "wood", "toothpick") in msg and "toothpicks_obtained" not in States:
 			say("""Upon closer inspection, you see the box contains a large quantity of long, julienned pieces of wood.
 				They could be useful, and wouldn't weigh much anyways.""")
@@ -220,7 +220,7 @@ class Cafe(Room):
 				one of the early internally powered models: a portable version. You might be able to turn it on.""")
 	def GET(self, cmd, cmds, msg):
 		if "flashlighton" not in States:
-			say("You can't see anything. it's pitch black.")
+			say("You can't see anything; it's pitch black.")
 			return
 		if ("box", "wood", "toothpick") in msg and "toothpicks_obtained" not in States:
 			say("""You pick up the box of julienned wood; might be handy.""")
@@ -250,7 +250,7 @@ class Cafe(Room):
 			else:
 				say("You charade out the actions involved in turning on your hand, but if anything, the room gets darker. You'll probably need an actual flashlight.")
 		elif "flashlighton" not in States:
-			say("You can't see anything. it's pitch black.")
+			say("You can't see anything; it's pitch black.")
 		elif ("chair", "table") in msg:
 			say("You really don't want to sit down in those chairs.")
 		elif ("charge", "black", "cable") in msg and "charger" in Inventory:
@@ -624,7 +624,6 @@ class Room203(Room):
 		if ("red", "blade") in msg and "bladecaseopen" in States and "redblade" not in Inventory:
 			say("""You pickup the red blade from the case, and place it in your pack's sleeve.""")
 			Inventory["redblade"] = "A red blade with a nice handle. Still sharp."
-		
 	def USE(self, cmd, cmds, msg):
 		if ("black", "glass", "cube", "power", "switch") in msg: say("""You flick the power switch on the cube, and hear a small pop, followed by an unpleasent buzz.
 		The glass plate appears to house a display, which is gradually fading into visible brightness. A complicated binary signal is displayed, as an oscilating array of black and white buzzing squares. You watch it for awhile, but are unable to discern anything useful.
@@ -640,17 +639,111 @@ class Floor3(Room):
 		if "flashlighton" not in States: say("""You're in a dark hallway.
 			You're pretty sure the stairs door is still behind you.""")
 		else:
-			say("""You're in a hallway whose description is TODO
-			""")
-
+			say("""You're in a hallway that ends abruptly. Where you expected to see numerous dark and potentially loot filled guest rooms instead lies a large chunk of the ceiling.
+			.
+			Besides the stairs, the only door accessible is Room301. There is also """ + ("3f_manage_unlocked" in States and "an unlocked " or "a locked ") + "inaccessible door marked 'SYAFF'.")
 	def GO(self, cmd, cmds, msg):
+		if "flashlighton" not in States: say("You can't see anything, but feel your way to the door.")
 		if "stair" in msg:
 			setArea("stairs")
+		elif ("staff", "syaff") in msg:
+			if "3f_manage_unlocked" in States: say("It may be unlocked, but you still can't reach it.")
+			else: say("You cannot reach that door, and besides, its locked anyway.")
+		elif ("room", "301") in msg:
+			setArea("room301")
 	def LOOK(self, cmd, cmds, msg):
-		pass
+		if "flashlighton" not in States: say("You can't see anything; it's pitch black.")
+		elif ("staff", "syaff", "accessibl") in msg: say("You peer closer at the lettering on the door, and conclude that it probably says 'Staff', but maintain that T's should not be that heavily stylized.")
+		elif ("room", "301") in msg: say("A thin veneer of cedar glued over a cheap mesh of wood and glue; all that seperates a room's occupants from the outside world. Also it isn't locked.")
+		elif ("debris", "ceiling", "chunk"): say("The building must've taken a heavy hit just above you, judging from this mess.")
 	def GET(self, cmd, cmds, msg):
-		pass
+		if ("debris", "ceiling", "chunk") in msg: say("You can't pick up the ceiling; what.")
 	def USE(self, cmd, cmds, msg):
-		pass
+		if "light" in msg:
+			if "flashlight" in Inventory:
+				if "flashlighton" in States:
+					say("You turn off the flashlight, deciding that conserving battery power is likely more important than being able to do anything at all.")
+					del States["flashlighton"]
+				else:
+					say("""You pull the old Lithium Ion flashlight out of your backpack and turn it on. The hall becomes well illuminated.""")
+					States["flashlighton"] = True
+			else:
+				say("You charade out the actions involved in turning on your hand, but if anything, the room gets darker. You'll probably need an actual flashlight.")
+		elif "flashlighton" not in States:
+			say("You can't see anything; it's pitch black.")
+		elif "key" in msg and "managementkey" in Inventory and ("staff", "syaff", "door") in msg:
+			say("Reaching around the debris from the ceiling, you unlock the 'SYAFF' door using the Mgmnt key.")
+			States["3f_manage_unlocked"] = True
+
+class Room301(Room):
+	def describe(self):
+		say("""This room appears to have suffered similar damage to the hallway. A large metal support beam has fallen through from above, exposing a bright hole to the roof. There's a clipboard amongst the debris.
+		.
+		Behind you is the hallway door.""")
+	def GO(self, cmd, cmds, msg):
+		if ("hall", "door") in msg:
+			if "core_obtained" not in States: setArea("floor3")
+			else: say("The door won't budge; the crater's collapse must have blocked it.")
+		elif ("hole", "beam", "roof", "metal") in msg: setArea("rooftop")
+	def LOOK(self, cmd, cmds, msg):
+		if ("hole", "roof") in msg: say("The hole means this room is effectively exposed to the outside air, so you shouldn't stay here long.") 
+		elif ("beam", "metal") in msg: say("A sturdy metal girder, with associated roof debris still attached. You can probably climb up it to the roof.")
+		elif ("clip") in msg: say("Where there's a clipboard, there's paperclips! Or sometimes a metal clasp. But in this case paperclips!") 
+	def GET(self, cmd, cmds, msg):
+		if ("clip", "pick") in msg and "room301_clips" not in States:
+			say("Exposure to outside air or not, you pause to pickup the paperclips, snapping them to yield 6 lockpicks.")
+			States["pins"] += 6
+			States["room301_clips"] = True
+	def USE(self, cmd, cmds, msg): pass
+
+class Rooftop(Room):
+	def describe(self):
+		if "core_obtained" not in States:
+			say("""You're on the rooftop of the hotel. The cause of the damage on the lower floors is clear: the building was hit, and with enough velocity to collapse the cafe and leave a crater on the roof. You see the remains of the communications tower, obviously hit during the impact, whose central column provided your ramp up. Though the town's remains sparkle in the distance, the biting wind reminds you of the urgency of your work. The less time spent up here, the better.
+			.
+			The crater draws your attention.
+			.
+			The hole to Room301 is behind you.""")
+		else: say("""The rooftop of the hotel has collapsed further, and theres a widening crater in the center where the Core hit. You don't think you'll be able to get back down through the hotel, so there must be another way.
+		.
+		There's a north, east, south, and west edge to consider, but you don't have a lot of time, both structurally and respiratorily, you may just need to jump.""")
+	def GO(self, cmd, cmds, msg):
+		if ("hole", "room", "301") in msg: setArea("room301")
+		elif "ladder" in msg: setArea("hotelground")
+		elif ("jump", "bush") in msg:
+			raw_input("Alright, you're going to jump...")
+			raw_input("You take a deep breath, and run towards the south edge...")
+			say("And chicken out; what if the core gets damaged?")
+	def LOOK(self, cmd, cmds, msg):
+		if ("core") in msg: say("Finally, the core! Now you can finally get the Resolution back up to speed.")
+		elif ("commun", "tower") in msg: say("Pretty pathetic tech, considering the radiation leakage and high power consumption, but it revolutionized the culture of the time.")
+		elif ("town") in msg: say("Though the town is enticing, you find it hard to concentrate through gasping for breaths.")
+		elif ("wind", "air") in msg: say("Dusty, radioactively decaying debris fills the air.") 
+		if "core_obtained" not in States:
+			if ("crater") in msg: say("You lean over the hole left by the speeding projectile, and are so used to disappointment that you almost don't notice that you've finally found it. It cost you weeks of exposure, but you've been timing your trips, so it should work out. Now just to grab it and get out of here. The thing weighs a fair bit, and probably won't fit in your pack, so you'll need to hold onto it.")
+			elif ("it") in msg: say("There's a lot of it's in the world, you're going to need to be more specific.")
+			elif ("thing") in msg: say("Sure its a thing, but what type of thing is it?")
+		else:
+			if ("crater") in msg: say("The crater is getting wider; this building is likely no longer up to the fire code.")
+			elif "north" in msg: say("The north face leans over the escarpment, not a nice height. The second floor balconys would be hard to reach from here, and might not even support your fall.")
+			elif "east" in msg: say("The east face overlooks the hotel's exercise basin, but the water has long since drained. Not looking good.")
+			elif "south" in msg: say("To the south is the front entrance's parking lot. There is a large bush that might break your fall to some degree were you to jump, and that might be your only option.")
+			elif "west" in msg: say("The west side has several balconys, but theres no telling which of them are blocked. There's also a maintenance ladder that extends most of the way down. Cool!")
+			elif "ladder" in msg: say("The ladder goes to 2m off the ground, seems ideal.")
+	def GET(self, cmd, cmds, msg):
+		if "core_obtained" not in States:
+			if ("it") in msg: say("There's a lot of it's in the world, you're going to need to be more specific.")
+			elif ("project") in msg: say("Its not a projectile anymore, that was just a temporary state brought on by the rapid unplanned disassembly earlier.")
+			elif ("thing") in msg: say("Sure its a thing, but what type of thing is it?")
+			elif ("core") in msg:
+				say("You get down on your stomach, and reach into the crater. You manage to grab the installation handle, and with a firm yank, it breaks loose. With a loud grind, the crater collapses further, and you just barely back out as the ledge falls apart.")
+				States["core_obtained"] = True
+		else: say("There's nothing to get up here, besides respiratory problems.")
+	def USE(self, cmd, cmds, msg):
+		if "ladder" in msg: self.GO("","",SearchableString("ladder"))
+		elif "jump" in msg: self.GO("","",SearchableString("jump"))
+
+class HotelGround(Room):
+	def describe(self): say("You're outside the Grand Luxury Hotel. With the Core in hand, you're ready to restore the Resolution and hopefully get out of this red zone. [EOF]")
 
 loadRoomModule(sys.modules[__name__])
