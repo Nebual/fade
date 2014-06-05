@@ -125,7 +125,7 @@ def main(difficulty, pins):
 		#Save the current tetronimo + position with `space`
 		if press == " ":
 			if pins < 1:
-				print "You don't have any pins remaining."
+				print("You don't have any pins remaining.")
 				return 0, pins
 			for y, row in enumerate(picks[pick].s.split("\n")):
 				for x, char in enumerate(row):
@@ -160,17 +160,17 @@ def main(difficulty, pins):
 		skey += "#"*7
 		
 		consolelib.clear()
-		print """\
+		print("""\
 Using your Booker, you scan the internal layout of the tumblers, creating
 a 3D model. You'll need to bend your flexium pins to the correct shape,
-and then flashweld them to create a working key.\n"""
-		print consolelib.screenSplit((slock, skey, helptext + str(pins)), width=10) + "\n"
+and then flashweld them to create a working key.\n""")
+		print(consolelib.screenSplit((slock, skey, helptext + str(pins)), width=10) + "\n")
 		
 		try: press = consolelib.getKey()
 		except KeyboardInterrupt:
-			print "You decide to give up on picking the lock for now."
+			print("You decide to give up on picking the lock for now.")
 			return 0, pins
 
 
 if __name__ == "__main__":
-	print main(1, 10)
+	print(main(1, 10))

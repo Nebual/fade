@@ -26,6 +26,12 @@ def wrap(s):
 def say(s):
 	print(wrap(s))
 
+if sys.version_info >= (3,):
+	def raw_input(s): return input(s)
+else:
+	raw_input = raw_input
+	
+
 class SearchableString(str):
 	"""A subclass of str, that lets you do
 	("hello", "hi") in "hello there gentlemen"

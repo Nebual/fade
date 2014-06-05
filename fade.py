@@ -3,10 +3,8 @@ from optparse import OptionParser
 try: import readline #Importing this enables up/down arrows in Linux
 except ImportError: pass
 
-sys.path.append("..")
 import consolelib
-
-from roomCommon import say, SearchableString, playSound, getTime, setArea, notFound, GO, LOOK, GET, USE, LOCKPICK, Areas, States, Inventory
+from roomCommon import say, SearchableString, playSound, getTime, setArea, notFound, GO, LOOK, GET, USE, LOCKPICK, Areas, States, Inventory, raw_input
 import hotel
 
 def parseCMD(msg):
@@ -26,7 +24,7 @@ def parseCMD(msg):
 			print("== Progress saved to '"+SaveName+".sav' ==")
 	elif cmd in ("clear", "cls"):
 		consolelib.clear()
-		print " "
+		print(" ")
 	elif cmd in ("h", "help"):
 		print ("You consider for a moment the verbs you've learned:\n"
 			"go/enter [room]\n"
@@ -44,8 +42,8 @@ def parseCMD(msg):
 			print("You stop and look at the contents of your leather backpack:")
 			for item in Inventory.values():
 				print("\t- "+item)
-			print "\t- Lockpicking pins: "+str(States["pins"])
-			print "\t- Money: $%.2f" % States["money"]
+			print("\t- Lockpicking pins: "+str(States["pins"]))
+			print("\t- Money: $%.2f" % States["money"])
 		else:
 			say("There isn't anything in your pockets. You try to start missions light.")
 	elif cmd in ("time", "watch"):

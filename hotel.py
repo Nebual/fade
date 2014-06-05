@@ -1,6 +1,6 @@
 import sys, time, random
 import lockpick, consolelib
-from roomCommon import say, Areas, States, Inventory, SearchableString, playSound, getTime, setArea, Room, loadRoomModule
+from roomCommon import say, Areas, States, Inventory, SearchableString, playSound, getTime, setArea, Room, loadRoomModule, raw_input
 
 	
 class Lobby(Room):
