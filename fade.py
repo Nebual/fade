@@ -1,4 +1,4 @@
-import os, sys, pickle, time, random
+import sys, pickle, time, random
 from optparse import OptionParser
 try: import readline #Importing this enables up/down arrows in Linux
 except ImportError: pass
@@ -27,17 +27,18 @@ def parseCMD(msg):
 	elif cmd in ("clear", "cls"):
 		consolelib.clear()
 		print " "
-	elif cmd == "help":
+	elif cmd in ("h", "help"):
 		print ("You consider for a moment the verbs you've learned:\n"
-			"go (enter) [room]\n"
-			"back (return, last) goes to previous room\n"
-			"examine (look) [object]\n"
-			"grab (pick, get, take) [object]\n"
+			"go/enter [room]\n"
+			"back/return/last goes to previous room\n"
+			"look/examine/view [object]\n"
+			"grab/pick/get/take [object]\n"
 			"use [object] on [object]\n"
 			"lockpick [object]\n"
 			"time\n"
-			"i (inventory)\n"
-			"save/load [savename]")
+			"i/inventory\n"
+			"save [filename]\n"
+			"load [filename]")
 	elif cmd in ("i", "inventory"):
 		if "backpack" in States:
 			print("You stop and look at the contents of your leather backpack:")
@@ -60,6 +61,7 @@ def parseCMD(msg):
 	elif cmd in LOOK:
 		if ("booker", "arm") in msg:
 			say("The Booker on your arm is an advanced Personal Information Processor. The 2000 model premiered in the year 8AA, and is primarily built from salvaged Old world components modified to support an MF power core. Its many features include a watch, 3D scanner, 1w laser pointer (doubles as a microwelder), journal logging, and flying toasters screensaver.")
+		elif ("keyhole") in msg: say("You peer through the door's keyhole, but can't see anything, since there's a lock in the way.")
 		else:
 			curArea.LOOK(cmd, cmds, msg)
 	elif cmd in GET:
@@ -68,7 +70,7 @@ def parseCMD(msg):
 		with consolelib.listenPrints() as printedString:
 			curArea.USE(cmd, cmds, msg)
 		if printedString[0]: pass
-		elif "magazine" in Inventory and "magazine" in msg:
+		elif "magazines" in Inventory and ("maga", "zine") in msg:
 			say("Is now the best time to be doing that?")
 		elif "crochetagebook" in Inventory and "crochet" in msg:
 			say("You flip through the booklet, but you can't understand the language. The diagrams detail the basics of picking locks.")
@@ -84,6 +86,9 @@ def parseCMD(msg):
 			"Besides, you're supposed to follow 'leave no trace' when Seeking.")
 	elif ("break", "kick", "smash") in cmd:
 		say("Seekers can't just go around breaking things, especially not in old ruins.")
+	elif ("hello", "hi", "hey") in cmd: say("Ello.")
+	elif ("yes") in cmd: say("Nope.")
+	elif ("no") in cmd: say("Yep.")
 
 def main():
 	while True:
@@ -156,7 +161,7 @@ if __name__ == "__main__":
 		consolelib.clear()
 		time.sleep(0.3)
 		
-	if "area" not in States:
+	if "time" not in States:
 		#New game!
 		States["time"] = 9*60
 		States["pins"] = 0

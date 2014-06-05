@@ -28,6 +28,10 @@ picks = [
 """\
  =
 ===""",
+"""\
+ =
+==
+ ="""
 ]
 for i, s in enumerate(picks):
 	picks[i] = Pick(s)
@@ -43,10 +47,10 @@ locks = [[
 ====
   ==""",
 """\
-= =
-===
-  =
-  =""",
+==
+== 
+====
+ ==""",
 """\
 ==
 ===
@@ -125,7 +129,7 @@ def main(difficulty, pins):
 				return 0, pins
 			for y, row in enumerate(picks[pick].s.split("\n")):
 				for x, char in enumerate(row):
-					tkey[(posy+y)*5 + (posx+x)] = char == "=" and "=" or " "
+					if char == "=": tkey[(posy+y)*5 + (posx+x)] = "="
 			pins -= 1
 		#Clear the saved tetrominos with `z`
 		elif press == "z":

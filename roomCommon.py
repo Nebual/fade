@@ -1,4 +1,4 @@
-import os, sys, time, random, inspect
+import sys, time, random, inspect
 
 import lockpick, consolelib
 
@@ -47,14 +47,14 @@ else:
 
 
 GO = ("enter", "go", "goto")
-LOOK = ("examine", "look")
+LOOK = ("examine", "look", "view")
 GET = ("pick", "grab", "get", "take", "pickup")
-USE = ("use",)
+USE = ("use", "open", "turn")
 LOCKPICK = ("lockpick",)
 
 notFounds = (
 	("You attempt to %s %s, but can't see how.","Despite how great it might be to %s %s, you don't see it.", "%s %s, you cannot."),
-	("You look around feverently for this %s, but find nothing of the sort.","Your attempts to find %s have been entirely unfruitful.","Your %s viewing abilities are quite compromised.","As insightful as looking at %s may be, you don't see it.", "See %s, you cannot."),
+	("You look around feverently for this %s, but find nothing of the sort.","Your attempts to find anything interesting about %s have been entirely unfruitful.","Your %s viewing abilities are quite compromised.","As insightful as looking at %s may be, you don't see it.", "See %s, you cannot."),
 	("You don't see what using %s would accomplish.","You failed in your attempt to use %s. Good job!", "Use %s, you cannot."),
 	("You don't think you can %s %s.","%s %s, you cannot.", "You would seriously want to %s %s?"),
 	("You're not sure what '%s' entails.", "You try your best to '%s', but nothing happens.", "You don't think you were ever trained to '%s'", "You're pretty sure someone once told you how to '%s', but it escapes you at the moment.", "You '%s', but its not very effective."),
