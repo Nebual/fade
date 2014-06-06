@@ -1,0 +1,161 @@
+<!DOCTYPE HTML>
+<head>
+	<title>Fade Browser Terminal</title>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+	<script>
+	$(document).ready(function() {
+		if (! ("WebSocket" in window)) WebSocket = MozWebSocket; // firefox
+		var socket = new WebSocket("ws://"+location.hostname+":8076");
+
+		var console = $("#console");
+		$(window).resize(function() {
+			console.css({'height' : ($(window).height() - 105) + "px"});
+			$(".side").css({'height' : ($(window).height() - 105) + "px"});
+		}); $(window).resize();
+		// open the socket
+		socket.onopen = function(event) {
+			//socket.send('connected\n');
+
+			var curWritePos = 0;
+			// show server response
+			socket.onmessage = function(e) {
+				console.val(console.val() + e.data);
+				curWritePos = console.val().length;
+				console.scrollTop(console.prop("scrollHeight"));
+			}
+
+			$.fn.getCursorPosition = function() {
+				var el = $(this).get(0);
+				var pos = 0;
+				if('selectionStart' in el) {
+					pos = el.selectionStart;
+				} else if('selection' in document) {
+					el.focus();
+					var Sel = document.selection.createRange();
+					var SelLength = document.selection.createRange().text.length;
+					Sel.moveStart('character', -el.value.length);
+					pos = Sel.text.length - SelLength;
+				}
+				return pos;
+			}
+			
+			// Block typing prior to the -->
+			console.keydown(function (e) {
+				if($(this).getCursorPosition() <= curWritePos) {
+					$(this).get(0).selectionStart = console.val().length;
+					if(e.keyCode == 8) {e.preventDefault();}
+					//e.preventDefault();
+				}
+			});
+			// for each typed key send #entry's text to server
+			console.keyup(function (e) {
+				if(e.keyCode == 13) {
+					socket.send(console.val().substr(curWritePos));
+				}
+			});
+			console.focus();
+		}
+	});
+	</script>
+	<style text="text/css">
+	body {
+		background-color: black;
+		padding: 0;
+		margin: 0;
+		text-align: center;
+	}
+	#console {
+		background-color: black;
+		/* color: #00ff00; */
+		color: #BEBEBE;
+		font-weight: bold;
+		font-family: monospace;
+		font-size: 14px;
+
+		width: 650px;
+		/*border: 1px #ddd inset;*/
+		border: 0;
+		padding: 10px;
+		margin: 40px;
+		
+		white-space: pre;
+		overflow-y: scroll;
+		resize: none;
+		box-shadow: 0 0 30px #7A90A5;
+	}
+	#console:focus {
+		outline: none !important;
+	}
+	
+	.side {
+		position: absolute; 
+		top: 40px;
+		left: 10px; 
+		width: 240px; 
+		height: 600px;
+		padding: 10px;
+		border: 1px #BEBEBE dashed;
+		text-align: left;
+		color: #BEBEBE;
+		opacity: 0.08;
+		-webkit-transition: opacity 15s ease-in-out;
+		-moz-transition: opacity 15s ease-in-out;
+		-o-transition: opacity 15s ease-in-out;
+		-ms-transition: opacity 15s ease-in-out;
+		transition: opacity 15s ease-in-out;
+	}
+	.side:hover {
+		opacity: 1;
+		-webkit-transition: opacity 0.4s ease-in-out;
+		-moz-transition: opacity 0.4s ease-in-out;
+		-o-transition: opacity 0.4s ease-in-out;
+		-ms-transition: opacity 0.4s ease-in-out;
+		transition: opacity 0.4s ease-in-out;
+	}
+	@media screen and (max-width:1248px) {
+		.side {display:none}
+	}
+	
+	::-webkit-scrollbar {
+		width: 12px;
+	}
+	 
+	/* Track */
+	::-webkit-scrollbar-track {
+		background: rgba(255,255,255,0.02);
+		-webkit-box-shadow: inset 0 0 6px rgba(255,255,255,0.1);
+		-webkit-border-radius: 2px;
+		border-radius: 2px;
+	}
+	 
+	/* Handle */
+	::-webkit-scrollbar-thumb {
+		background: rgba(108,151,197,0.2);
+		-webkit-border-radius: 3px;
+		-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
+		
+		-webkit-transition: background 1s ease-in-out;
+		-moz-transition: background 1s ease-in-out;
+		-o-transition: background 1s ease-in-out;
+		-ms-transition: background 1s ease-in-out;
+		transition: background 1s ease-in-out;
+	}
+	
+	::-webkit-scrollbar-thumb:active, ::-webkit-scrollbar-thumb:hover {
+		background: rgba(108,151,197,0.4);
+	}
+	</style>
+</head>
+<body>
+	<div class="side">go/enter [room]<br>
+			back/return/last goes to previous room<br>
+			look/examine/view [object]<br>
+			grab/pick/get/take [object]<br>
+			use [object] on [object]<br>
+			lockpick [object]<br>
+			time<br>
+			i/inventory<br>
+			save [filename]<br>
+			load [filename]</div>
+	<textarea id="console" spellcheck="false"></textarea>
+</body>

@@ -114,7 +114,7 @@ class mystdout(object):
 		sys.stdout = self
 		self.suppress = suppress
 	def write(self, data):
-		self.file.write(data)
+		self.file.write(unicode(data))
 		if not self.suppress: self.stdout.write(data)
 	def close(self):
 		s = self.file.getvalue()
@@ -136,14 +136,24 @@ def listenPrints(suppress=False):
 		yield out
 	finally:
 		out[0] = myout.close()
+
+FAST_TEXT = False
+def setTextSpeed(fast):
+	global FAST_TEXT
+	FAST_TEXT = fast
+
 @contextlib.contextmanager
 def charByChar(speed=0.0066):
 	"""Creates a context that saves all prints to a string, suppressing them.
 	When context is left, it prints the string char by char.
 	with charByChar(speed=0.1): print("lol")
 	"""
+	if FAST_TEXT:
+		yield
+		return
+
 	with listenPrints(suppress=True) as out:
-		yield out
+		yield
 	for char in out[0]:
 		sys.stdout.write(char)
 		sys.stdout.flush()
@@ -153,8 +163,12 @@ def charByLine(speed=0.0066):
 	"""Creates a context that saves all prints to a string, suppressing them.
 	When context is left, it prints the string char by char, with a longer delay at line endings.
 	"""
+	if FAST_TEXT:
+		yield
+		return
+
 	with listenPrints(suppress=True) as out:
-		yield out
+		yield
 	for i, char in enumerate(out[0]):
 		sys.stdout.write(char)
 		sys.stdout.flush()

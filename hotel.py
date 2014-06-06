@@ -43,7 +43,7 @@ class Lobby(Room):
 			say("""You peer through the window to the Cafe.
 				It's far too dark to enter, you'd just be bumbling into the furniture.""")
 		elif "washroom" in msg:
-			say("""There are two washroom doors, labeled Mars and Venus. While the latter is entirely inaccessible,  
+			say("""There are two washroom doors, labeled Mars and Venus. While the latter is entirely inaccessible,
 				the doorframe to Mars has caved in slightly, leaving the door proped open.""")
 		elif "suppl" in msg: say("A door to the Lobby's supplies cupboard.")
 		elif "stair" in msg:

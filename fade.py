@@ -1,9 +1,9 @@
-import sys, pickle, time, random
+import sys, time, random
 from optparse import OptionParser
 try: import readline #Importing this enables up/down arrows in Linux
 except ImportError: pass
 
-import consolelib
+import consolelib, dson
 from roomCommon import say, SearchableString, playSound, getTime, setArea, notFound, GO, LOOK, GET, USE, LOCKPICK, Areas, States, Inventory, raw_input
 import hotel
 
@@ -13,15 +13,15 @@ def parseCMD(msg):
 	if cmd == "load":
 		SaveName = len(cmds) > 1 and cmds[1] or raw_input("Save name: >")
 		if SaveName:
-			NewStates, NewInventory = pickle.load(open(SaveName+".sav","rb"))
+			NewStates, NewInventory = dson.load(open(SaveName+".dson","r"))
 			States.clear(); Inventory.clear()
 			States.update(NewStates); Inventory.update(NewInventory)
-			print("== Progress loaded from '"+SaveName+".sav' ==")
+			print("== Progress loaded from '"+SaveName+".dson' ==")
 	elif cmd == "save":
 		SaveName = len(cmds) > 1 and cmds[1] or raw_input("Save name: >")
 		if SaveName:
-			pickle.dump((States, Inventory), open(SaveName+".sav","wb"))
-			print("== Progress saved to '"+SaveName+".sav' ==")
+			dson.dump((States, Inventory), open(SaveName+".dson","w"), indent=2)
+			print("== Progress saved to '"+SaveName+".dson' ==")
 	elif cmd in ("clear", "cls"):
 		consolelib.clear()
 		print(" ")
@@ -106,12 +106,15 @@ if __name__ == "__main__":
 	parser = OptionParser()
 	parser.add_option("-s", "--skip-intro", action="store_false", dest="showintro", default=True, help="skip the intro cinematic")
 	parser.add_option("-l", "--load", action="store", type="string", dest="load", help="load a save")
+	parser.add_option("-f", "--fast", action="store_true", dest="fasttext", default=False, help="disables slow text printing")
 	
 	options, args = parser.parse_args()
+	if options.fasttext:
+		consolelib.setTextSpeed(True)
 	if options.load:
 		parseCMD("load "+options.load.rsplit(".", 1)[0])
-	elif options.showintro:
-		raw_input("""\
+		options.showintro = False
+	else: raw_input("""\
 ==========================================
 
 `7MMMMMMMM  db      `7MMMMMYb. `7MMMMMMMM  
@@ -126,8 +129,9 @@ if __name__ == "__main__":
 ----- Stumbling through the darkness -----
 ==========================================
 
-               [Start Game]
+          [Enter to Start Game]\
 """)
+	if options.showintro:
 		playSound("sounds/ps1start.wav")
 
 		greyscale = [
@@ -164,6 +168,7 @@ if __name__ == "__main__":
 		States["time"] = 9*60
 		States["pins"] = 0
 		States["money"] = 3
+		print("        [Type 'help' for commands]\n\n")
 		setArea("lobby")
 	
 	WasKBInterrupt = False
@@ -173,5 +178,6 @@ if __name__ == "__main__":
 		WasKBInterrupt = True
 	finally:
 		if not WasKBInterrupt:
-			print("Eeek we crashed! Emergency saving to crash.sav")
+			print("Eeek we crashed! Emergency saving to crash.sav...")
 			pickle.dump((States, Inventory), open("crash.sav","wb"))
+			print("Save successful! Printing stacktrace:\n")
