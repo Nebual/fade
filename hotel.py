@@ -561,7 +561,7 @@ class Room202(Room):
 		Behind you is the hallway, and a large hole in the far wall leads to the balcony.
 		""")
 	def GO(self, cmd, cmds, msg):
-		if "hallway" in msg: setArea("floor2")
+		if "hall" in msg: setArea("floor2")
 		elif ("hole", "balc") in msg: setArea("floor2balcony")
 	def LOOK(self, cmd, cmds, msg):
 		if ("wallpaper", "stains", "soot", "fire"): say("This place is totally wrecked.")

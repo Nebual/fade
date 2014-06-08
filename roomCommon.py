@@ -104,6 +104,133 @@ def setArea(newArea):
 			with consolelib.charByLine(0.0125):
 				Areas[States["area"]].describe()
 
+Maps = {
+"hotel" : ((80, 32), {
+	"visited_lobby" : ((20, 22), """\
+=======||=======
+[              ||
+|              ]
+[              ]
+[     Main     ]
+[     Lobby    ||
+[              ]
+/              ||
+[              ]
+=======||=======\
+"""),
+	"visited_washroom" : ((11, 22), """\
+========
+[      ]
+[ Wash ||
+[ room ]
+[      ]
+========\
+"""),
+	"visited_cafe" : ((37, 20), """\
+=====================
+[            =     =]
+[            =       ]
+|    Cafe            ]
+[            =       ]
+[            =     =]
+=====================\
+"""),
+	"visited_supplies" : ((37, 28), """\
+============
+| Supplies ]
+[ Closet   ]
+============\
+"""),
+	"visited_stairs" : ((24, 5), """\
+========
+|      ]
+[------]
+[-     ]
+[ -    ]
+[Stairs]
+[   -  ]
+[    - ]
+[     -||
+[------]
+[-     ]
+[ -    ]
+[  -   ]
+[   -  ]
+[    - ]
+/     -]
+===||===\
+"""),
+	"visited_floor2" : ((33, 11), """\
+===||=====||=====//====
+[                 ====]
+|     Floor 2       ==]
+[     Hallway     ====]
+=======================\
+"""),
+	"visited_room201" : ((33, 7), """\
+===//===
+[ Room ]
+[ 201  ]
+[      ]\
+"""),
+	"visited_room202" : ((40, 7), """\
+===  ===
+[ Room ]
+[ 202  ]
+[      ]\
+"""),
+	"visited_room203" : ((47, 7), """\
+===||===
+[ Room ]
+[ 203  ]
+[      ]\
+"""),
+	"visited_floor2balcony" : ((33, 4), """\
+======================
+[      -Floor2-      ]
+[      -Balcony      ]\
+"""),
+	"visited_floor3" : ((5, 5), """\
+=============||===
+[     ==  ====   ||
+[ Floor3 = ==    ]
+[ Hallway =      ]
+==========//======\
+"""),
+	"visited_room301" : ((12, 1), """\
+========
+[ Room ]
+[ 301  ]
+[  X   ]\
+"""),
+	"visited_rooftop" : ((21, 0), """\
+===========
+[ Rooftop ]
+[         ]
+[  X      ]
+===========\
+""")
+})}
+
+def openMap(mapname):
+	if mapname not in Maps:
+		print("It doesn't seem to have enough data for the current area yet.")
+		return
+	(mapSizeX, mapSizeY), layouts = Maps[mapname]
+	Map = [[" " for x in range(mapSizeX)] for y in range(mapSizeY)]
+	for y, line in enumerate(Map):
+		if y % 5 == 0 and y != 0:
+			for x, char in enumerate(str(y)): line[x] = char
+	for place in layouts:
+		if place in States:
+			(layoutX, layoutY), layout = layouts[place]
+			for liney, line in enumerate(layout.split("\n")):
+				for linex, char in enumerate(line):
+					Map[liney + layoutY][linex + layoutX] = char
+	print " " + "".join([x % 10 == 0 and str(x).ljust(10) or "" for x in range(mapSizeX)])
+	for line in Map:
+		print "".join(line)
+
 class Room(object):
 	def describe(self): say(""" """)
 	def GO(self, cmd, cmds, msg): pass
@@ -167,5 +294,6 @@ def loadRoomModule(module):
 			#Create a new instance of each room, and throw it in Areas 
 			Instance = cls()
 			Instance.name = name.lower()
+			Instance.zone = module.__name__.lower()
 			Areas[Instance.name] = Instance
 loadRoomModule(sys.modules[__name__])

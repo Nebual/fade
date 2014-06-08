@@ -4,7 +4,7 @@ try: import readline #Importing this enables up/down arrows in Linux
 except ImportError: pass
 
 import consolelib, dson
-from roomCommon import say, SearchableString, playSound, getTime, setArea, notFound, GO, LOOK, GET, USE, LOCKPICK, Areas, States, Inventory, raw_input
+from roomCommon import say, SearchableString, playSound, getTime, setArea, openMap, notFound, GO, LOOK, GET, USE, LOCKPICK, Areas, States, Inventory, raw_input
 import hotel
 
 def parseCMD(msg):
@@ -34,6 +34,7 @@ def parseCMD(msg):
 			"use [object] on [object]\n"
 			"lockpick [object]\n"
 			"time\n"
+			"map\n"
 			"i/inventory\n"
 			"save [filename]\n"
 			"load [filename]")
@@ -49,6 +50,10 @@ def parseCMD(msg):
 	elif cmd in ("time", "watch"):
 		if "watch" in States: say("You glance at your Booker's display of the current local time: "+getTime())
 		else: say("Your booker's internal clock hasn't been configured for this locale, and is still displaying your home time: " + str(int(States["time"]/1.44)))
+	elif cmd in ("map",):
+		say("You review your Booker's spatial layouting program.")
+		with consolelib.lineByLine(0.03):
+			openMap(curArea.zone)
 	elif cmd == "" or (cmd in LOOK and len(cmds) == 1):
 		curArea.describe()
 	elif cmd in ("back", "return", "last") or "go back" in msg:
@@ -178,6 +183,6 @@ if __name__ == "__main__":
 		WasKBInterrupt = True
 	finally:
 		if not WasKBInterrupt:
-			print("Eeek we crashed! Emergency saving to crash.sav...")
-			pickle.dump((States, Inventory), open("crash.sav","wb"))
+			print("Eeek we crashed! Emergency saving to crash.dson...")
+			dson.dump((States, Inventory), open("crash.dson","w"))
 			print("Save successful! Printing stacktrace:\n")

@@ -174,3 +174,18 @@ def charByLine(speed=0.0066):
 		sys.stdout.flush()
 		time.sleep(speed)
 		if char == "\n" and out[0][i-1] in ("!",".","?") and i != len(out[0])-1: time.sleep(speed*50)
+@contextlib.contextmanager
+def lineByLine(speed=0.33):
+	"""Creates a context that saves all prints to a string, suppressing them.
+	When context is left, it prints the string line by line, with a delay between lines
+	"""
+	if FAST_TEXT:
+		yield
+		return
+
+	with listenPrints(suppress=True) as out:
+		yield
+	for line in out[0].split("\n"):
+		sys.stdout.write(line)
+		sys.stdout.flush()
+		time.sleep(speed)
