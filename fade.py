@@ -120,21 +120,21 @@ if __name__ == "__main__":
 		parseCMD("load "+options.load.rsplit(".", 1)[0])
 		options.showintro = False
 	else: raw_input("""\
-==========================================
+                  ==========================================
 
-`7MMMMMMMM  db      `7MMMMMYb. `7MMMMMMMM  
-  MM    `7 ;MM:       MM    `Yb. MM    `7  
-  MM   d  ,V^MM.      MM     `Mb MM   d    
-  MM""MM ,M  `MM      MM      MM MMmmMM    
-  MM   Y AbmmmqMA     MM     ,MP MM   Y  , 
-  MM    A'     VML    MM    ,dP' MM     ,M 
-.JMML..AMA.   .AMMA..JMMmmmdP' .JMMmmmmMMM
+                  `7MMMMMMMM  db      `7MMMMMYb. `7MMMMMMMM  
+                    MM    `7 ;MM:       MM    `Yb. MM    `7  
+                    MM   d  ,V^MM.      MM     `Mb MM   d    
+                    MM""MM ,M  `MM      MM      MM MMmmMM    
+                    MM   Y AbmmmqMA     MM     ,MP MM   Y  , 
+                    MM    A'     VML    MM    ,dP' MM     ,M 
+                  .JMML..AMA.   .AMMA..JMMmmmdP' .JMMmmmmMMM
 
-=============== The Search ===============
------ Stumbling through the darkness -----
-==========================================
+                  =============== The Search ===============
+                  ----- Stumbling through the darkness -----
+                  ==========================================
 
-          [Enter to Start Game]\
+                            [Enter to Start Game]\
 """)
 	if options.showintro:
 		playSound("sounds/ps1start.wav")
@@ -173,7 +173,7 @@ if __name__ == "__main__":
 		States["time"] = 9*60
 		States["pins"] = 0
 		States["money"] = 3
-		print("        [Type 'help' for commands]\n\n")
+		print("                          [Type 'help' for commands]\n\n")
 		setArea("lobby")
 	
 	WasKBInterrupt = False
