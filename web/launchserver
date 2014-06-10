@@ -1,2 +1,2 @@
-#!/usr/bin/python
+#!/bin/bash
 python twistd.py -ny wsserver.py

@@ -67,9 +67,8 @@ class Lobby(Room):
 			Inventory["stairkey"] = "A worn key. There is an 'S' scratched on it."
 	def USE(self, cmd, cmds, msg):
 		if "key" in msg:
-			if len(cmds) > 3:
-				resp = cmds[3]
-				if "stair" in resp:
+			if len(cmds) > 2:
+				if ("stair", "doorknob") in msg:
 					if "stairkey" in Inventory:
 						say("""You put the 'S' key into the Stairwell Door.""")
 						raw_input("...")
@@ -80,24 +79,24 @@ class Lobby(Room):
 						States["stairdoor"] = True
 						del Inventory["stairkey"]
 					else: say("You don't seem to have a key that matches the stairs door.")
-				elif "cafe" in resp:
+				elif "cafe" in msg:
 					say("The cafe door has no lock.")
 					if not "flashlight" in Inventory:
 						say("it's just creepy in there without a light.")
-				elif "washroom" in resp:
+				elif "washroom" in msg:
 					say("The washroom door is already proped open.")
-				elif "manage" in resp:
+				elif "manage" in msg:
 					if "managementkey" in Inventory:
 						say("You carefully insert the large key into the lock, and to your delight, it unlocks!")
 						States["managedoor"] = True
 					else: say("The keyhole for the Management door takes a very large key.")
-				elif "suppl" in resp:
+				elif "suppl" in msg:
 					if "suppliesdoorkey" in Inventory:
 						say("You unlock the door labeled Supplies. Progress!")
 						States["suppliesdoor"] = True
 						del Inventory["suppliesdoorkey"]
 					else: say("The keyhole for the Supplies door takes a different key.")
-				elif "door" in resp:
+				elif "door" in msg:
 					print("Which door?")
 				else:
 					say("Keys are generally used to open locked things. Not much else.")
@@ -117,8 +116,8 @@ class Lobby(Room):
 class Washroom(Room):
 	def describe(self):
 		say("""You're in the first floor washrooms, Men's section.
-			There is a row of water recepticles below a glass mirror, neither of which appear to be in functional condition.
-			There is a wooden shelf, made of a low quality fibre that likely wasn't very attractive when it was new, either.
+			There is a row of water recepticles below a reflective glass plane, neither of which appear to be in useful condition.
+			There is a wooden shelf, made of a low quality wood fibre that likely wasn't very attractive when it was new, either.
 			A clipboard is on the wall near the door.
 			.
 			Behind you is the door to the lobby.""")
@@ -351,7 +350,7 @@ class Supplies(Room):
 			say("You pickup the cable, and place it in your backpack.")
 	def USE(self, cmd, cmds, msg):
 		if "key" in msg:
-			if len(cmds) > 3:
+			if len(cmds) > 2:
 				if ("mahog", "cupbo", "lost", "found") in msg and "supplyLAFcupboardunlocked" not in States and "managementkey" in Inventory:
 					States["supplyLAFcupboardunlocked"] = True
 					say("Using the key that you found an arms length away, you unlock the cupboard.")

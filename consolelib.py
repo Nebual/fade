@@ -31,7 +31,10 @@ RIGHT = "d"
 LEFT = "a"
 
 def clear():
-	os.system(os.name == "nt" and "cls" or "clear")
+	if WEB_MODE:
+		print("\\clear")
+	else:
+		os.system(os.name == "nt" and "cls" or "clear")
 
 try:
 	import msvcrt

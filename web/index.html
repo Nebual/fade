@@ -7,21 +7,36 @@
 		if (! ("WebSocket" in window)) WebSocket = MozWebSocket; // firefox
 		var socket = new WebSocket("ws://"+location.hostname+":8076");
 
-		var console = $("#console");
+		var consoleBox = $("#console");
 		$(window).resize(function() {
-			console.css({'height' : ($(window).height() - 105) + "px"});
+			consoleBox.css({'height' : ($(window).height() - 105) + "px"});
 			$(".side").css({'height' : ($(window).height() - 105) + "px"});
 		}); $(window).resize();
+		
 		// open the socket
 		socket.onopen = function(event) {
 			//socket.send('connected\n');
 
 			var curWritePos = 0;
 			// show server response
+	
 			socket.onmessage = function(e) {
-				console.val(console.val() + e.data);
-				curWritePos = console.val().length;
-				console.scrollTop(console.prop("scrollHeight"));
+				var lines = e.data.split('\n');
+				for(var i = 0;i < lines.length;i++){
+					var line = lines[i];
+					if(line.substr(0,1) != "\\") {
+						if(i == lines.length-1) {
+							consoleBox.val(consoleBox.val() + line);
+						} else {
+							consoleBox.val(consoleBox.val() + line + "\n");
+						}
+					} else if(line == "\\clear") {
+						consoleBox.val("");
+					}
+				}
+				
+				curWritePos = consoleBox.val().length;
+				consoleBox.scrollTop(consoleBox.prop("scrollHeight"));
 			}
 
 			$.fn.getCursorPosition = function() {
@@ -40,20 +55,20 @@
 			}
 			
 			// Block typing prior to the -->
-			console.keydown(function (e) {
+			consoleBox.keydown(function (e) {
 				if($(this).getCursorPosition() <= curWritePos) {
-					$(this).get(0).selectionStart = console.val().length;
+					$(this).get(0).selectionStart = consoleBox.val().length;
 					if(e.keyCode == 8) {e.preventDefault();}
 					//e.preventDefault();
 				}
 			});
 			// for each typed key send #entry's text to server
-			console.keyup(function (e) {
+			consoleBox.keyup(function (e) {
 				if(e.keyCode == 13) {
-					socket.send(console.val().substr(curWritePos));
+					socket.send(consoleBox.val().substr(curWritePos));
 				}
 			});
-			console.focus();
+			consoleBox.focus();
 		}
 	});
 	</script>

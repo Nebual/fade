@@ -112,10 +112,13 @@ if __name__ == "__main__":
 	parser.add_option("-s", "--skip-intro", action="store_false", dest="showintro", default=True, help="skip the intro cinematic")
 	parser.add_option("-l", "--load", action="store", type="string", dest="load", help="load a save")
 	parser.add_option("-f", "--fast", action="store_true", dest="fasttext", default=False, help="disables slow text printing")
+	parser.add_option("-w", "--web", action="store_true", dest="web", default=False, help="enables sending helper commands to a javascript frontend")
 	
 	options, args = parser.parse_args()
 	if options.fasttext:
 		consolelib.setTextSpeed(True)
+	if options.web:
+		consolelib.setWebMode(True)
 	if options.load:
 		parseCMD("load "+options.load.rsplit(".", 1)[0])
 		options.showintro = False
@@ -134,7 +137,7 @@ if __name__ == "__main__":
                   ----- Stumbling through the darkness -----
                   ==========================================
 
-                            [Enter to Start Game]\
+                                [Press Enter]\
 """)
 	if options.showintro:
 		playSound("sounds/ps1start.wav")
@@ -173,7 +176,14 @@ if __name__ == "__main__":
 		States["time"] = 9*60
 		States["pins"] = 0
 		States["money"] = 3
-		print("                          [Type 'help' for commands]\n\n")
+		consolelib.clear()
+		if(raw_input("""\n\n\n\n\n\n\n\n\n\n\n
+                      There is much to see in this world,
+                  take care to `look` at everything you find.
+\n\n\n\n\n\n
+                          [Press Enter to Start Game]
+                   [Type 'help' at any time to list commands]
+\n""") == "help"): parseCMD("help")
 		setArea("lobby")
 	
 	WasKBInterrupt = False

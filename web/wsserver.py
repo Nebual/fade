@@ -21,7 +21,7 @@ class Protocol(protocol.Protocol):
         self.pp = ProcessProtocol()
         self.pp.factory = self
         reactor.spawnProcess(self.pp, sys.executable,
-                             [sys.executable, '-u', '../fade.py', '-s', '-f'])
+                             [sys.executable, '-u', '../fade.py', '-s', '-f', '--web'])
     def dataReceived(self, data):
         log.msg("Recv: %r" % data)
         self.logfile.write(data)
