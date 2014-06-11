@@ -5,7 +5,7 @@ except ImportError: pass
 
 import consolelib, dson
 from roomCommon import say, SearchableString, playSound, getTime, setArea, openMap, notFound, GO, LOOK, GET, USE, LOCKPICK, Areas, States, Inventory, raw_input
-import hotel
+import hotel, resolution
 
 def parseCMD(msg):
 	cmds = msg.split(); cmd = SearchableString(len(cmds) > 0 and cmds[0] or "")

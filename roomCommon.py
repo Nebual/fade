@@ -1,13 +1,15 @@
 import sys, time, random, inspect
+import re, textwrap
 
 import lockpick, consolelib
+
+__all__ = ["say", "Areas", "States", "Inventory", "SearchableString", "playSound", "getTime", "setArea", "Room", "loadRoomModule", "raw_input"]
 
 Areas = {}
 States = {"area": "lobby"}
 Inventory = {}
 
 
-import re, textwrap
 wrapper = textwrap.TextWrapper(width=79)
 splitSentance = re.compile(r'([^\.!?]*[\.!?])').split
 def wrap(s):

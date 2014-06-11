@@ -26,8 +26,11 @@ class Lobby(Room):
 				say("The Management door does not wish to be opened. It is likely locked.")
 			else:
 				say("You open the freshly unlocked Management door. Or at least, you tried, but there's too much rubble on the other side to get past. At least you still have the key, maybe there'll be another office?")
-		elif "entrance" in msg:
-			say("You can't leave the hotel, you don't have the Core yet.")
+		elif ("entrance", "out") in msg:
+			if "core_obtained" in States:
+				setArea("hotelground")
+			else:
+				say("You can't leave the hotel, you don't have the Core yet.")
 		elif "suppli" in msg:
 			if "suppliesdoor" not in States:
 				say("The Supplies door is closed, and you can't seem to make it open. It is likely locked.")
@@ -111,6 +114,10 @@ class Lobby(Room):
 			ret, States["pins"] = lockpick.main(3, States["pins"])
 			if ret:
 				States["suppliesdoor"] = True
+		elif "manag" in msg and "managedoor" not in States:
+			ret, States["pins"] = lockpick.main(1, States["pins"])
+			if ret:
+				States["managedoor"] = True
 			
 	
 class Washroom(Room):
@@ -342,7 +349,7 @@ class Supplies(Room):
 		elif ("shoe") in msg: say("The shoes are, by a large margin, too small for your feet.")
 		elif ("hydra", "water", "bottle") in msg and "supplyLAFcupboardunlocked" in States and "supplyLAFbottletaken" not in States:
 			States["supplyLAFbottletaken"] = True
-			Inventory["waterbottle"] = "A 1000 cubic cm hydration bottle, full of water."
+			Inventory["waterbottle"] = "A 1000 cubic cm hydration bottle, empty."
 			say("You pickup the bottle, and place it in your backpack.")
 		elif ("black", "cable", "plug") in msg and "supplyLAFcupboardunlocked" in States and "supplyLAFchargertaken" not in States:
 			States["supplyLAFchargertaken"] = True
@@ -584,7 +591,7 @@ class Floor2Balcony(Room):
 	def LOOK(self, cmd, cmds, msg):
 		if ("view") in msg: say("The view is bleak.")
 		elif "hotel" in msg: say("You turn away from the interesting view to look at the boring side of the building. There's at least one floor above you, judging by the next balcony up, but beyond that nothing stands out. Doesn't mean the Core isn't up there though.")
-		elif ("town", "scape") in msg: say("You spy a large sign by the road leading into the town. Squinting through the dust clouds, you read 'Wapato Welcomes You'")
+		elif ("town", "scape") in msg: say("You spy a large sign by the riverway leading into the town. Squinting through the dust clouds, you read 'Wapato Welcomes You'")
 		elif "balcon" in msg: say("The balcony of Room203")
 		elif ("hole","202") in msg: say("The hole leads to the barren wasteland that is Room202. It's almost nicer than the barren wasteland that is outside.")
 		elif ("door","203") in msg:
@@ -753,6 +760,12 @@ class Rooftop(Room):
 		elif "jump" in msg: self.GO("","",SearchableString("jump"))
 
 class HotelGround(Room):
-	def describe(self): say("You're outside the Grand Luxury Hotel. With the Core in hand, you're ready to restore the Resolution and hopefully get out of this red zone. [EOF]")
+	def describe(self): say("You're outside the Grand Luxury Hotel. With the Core in hand, you're ready to restore the Resolution and hopefully get out of this red zone. . The hotel's lobby doors are behind you, and ahead lies a wide black riverway of stone marked US97.")
+	def LOOK(self, cmd, cmds, msg):
+		if ("river", "97", "road", "highway", "black") in msg: say("From the air, you saw a large network of these black riverways, cutting the landscape as far as the eye could see. They were probably once used for reducing the friction of wheeled transports. Rather inefficient compared to modern standards, but it beats the sand.")
+		elif ("lobby", "hotel", "door") in msg: say("You explored this hotel earlier, looking for the Resolution's Core.")
+	def GO(self, cmd, cmds, msg):
+		if ("river", "97", "road", "highway", "black") in msg: setArea("us97")
+		elif ("lobby", "hotel", "door") in msg: setArea("lobby")
 
 loadRoomModule(sys.modules[__name__])
