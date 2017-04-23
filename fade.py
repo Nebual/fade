@@ -1,24 +1,25 @@
-import sys, time, random
+import os, sys, time, random
 from optparse import OptionParser
 try: import readline #Importing this enables up/down arrows in Linux
 except ImportError: pass
 
 import consolelib, dson
-from roomCommon import say, SearchableString, playSound, getTime, setArea, openMap, notFound, GO, LOOK, GET, USE, LOCKPICK, Areas, States, Inventory, raw_input
+import roomCommon
+from roomCommon import say, SearchableString, playSound, getTime, setArea, openMap, notFound, GO, LOOK, GET, USE, LOCKPICK, Areas, States, Inventory
 import hotel, resolution
 
 def parseCMD(msg):
 	cmds = msg.split(); cmd = SearchableString(len(cmds) > 0 and cmds[0] or "")
 	curArea = Areas[States["area"]]
 	if cmd == "load":
-		SaveName = len(cmds) > 1 and cmds[1] or raw_input("Save name: >")
+		SaveName = len(cmds) > 1 and cmds[1] or input("Save name: >")
 		if SaveName:
 			NewStates, NewInventory = dson.load(open(SaveName+".dson","r"))
 			States.clear(); Inventory.clear()
 			States.update(NewStates); Inventory.update(NewInventory)
 			print("== Progress loaded from '"+SaveName+".dson' ==")
 	elif cmd == "save":
-		SaveName = len(cmds) > 1 and cmds[1] or raw_input("Save name: >")
+		SaveName = len(cmds) > 1 and cmds[1] or input("Save name: >")
 		if SaveName:
 			dson.dump((States, Inventory), open(SaveName+".dson","w"), indent=2)
 			print("== Progress saved to '"+SaveName+".dson' ==")
@@ -95,7 +96,7 @@ def parseCMD(msg):
 
 def main():
 	while True:
-		msg = SearchableString(raw_input("\n["+Areas[States["area"]].__class__.__name__+"]--> ").lower())
+		msg = SearchableString(input("\n["+Areas[States["area"]].__class__.__name__+"]--> ").lower())
 		print("")
 		
 		with consolelib.listenPrints() as printedString:
@@ -122,7 +123,7 @@ if __name__ == "__main__":
 	if options.load:
 		parseCMD("load "+options.load.rsplit(".", 1)[0])
 		options.showintro = False
-	else: raw_input("""\
+	else: input("""\
                   ==========================================
 
                   `7MMMMMMMM  db      `7MMMMMYb. `7MMMMMMMM  
@@ -177,7 +178,7 @@ if __name__ == "__main__":
 		States["pins"] = 0
 		States["money"] = 3
 		consolelib.clear()
-		if(raw_input("""\n\n\n\n\n\n\n\n\n\n\n
+		if(input("""\n\n\n\n\n\n\n\n\n\n\n
                       There is much to see in this world,
                   take care to `look` at everything you find.
 \n\n\n\n\n\n

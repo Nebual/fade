@@ -15,7 +15,7 @@ __all__ = ['DSONDecoder']
 FLAGS = re.VERBOSE | re.MULTILINE | re.DOTALL
 
 def _floatconstants():
-    _BYTES = '7FF80000000000007FF0000000000000'.decode('hex')
+    _BYTES = bytes.fromhex('7FF80000000000007FF0000000000000')
     if sys.byteorder != 'big':
         _BYTES = _BYTES[:8][::-1] + _BYTES[8:][::-1]
     nan, inf = struct.unpack('dd', _BYTES)
@@ -62,7 +62,7 @@ BACKSLASH = {
 
 DEFAULT_ENCODING = "utf-8"
 
-def py_scanstring(s, end, encoding=None, strict=True,
+def py_scanstring(s, end, strict=True,
         _b=BACKSLASH, _m=STRINGCHUNK.match):
     """Scan the string s for a DSON string. End is the index of the
     character in s after the quote that started the DSON string.
@@ -86,8 +86,8 @@ def py_scanstring(s, end, encoding=None, strict=True,
         content, terminator = chunk.groups()
         # Content is contains zero or more unescaped string characters
         if content:
-            if not isinstance(content, unicode):
-                content = unicode(content, encoding)
+            if not isinstance(content, str):
+                content = str(content, encoding)
             _append(content)
         # Terminator is the end of string, a literal control character,
         # or a backslash denoting that an escape sequence follows
@@ -133,7 +133,7 @@ def py_scanstring(s, end, encoding=None, strict=True,
                 uni2 = int(esc2, 16)
                 uni = 0x10000 + (((uni - 0xd800) << 10) | (uni2 - 0xdc00))
                 next_end += 6
-            char = unichr(uni)
+            char = chr(uni)
             end = next_end
         # Append the unescaped character
         _append(char)
@@ -173,7 +173,7 @@ def DSONObject(s_and_end, encoding, strict, scan_once, object_hook,
                 "Expecting property name enclosed in double quotes", s, end))
     end += 1
     while True:
-        key, end = scanstring(s, end, encoding, strict)
+        key, end = scanstring(s, end, strict)
 
         # To skip some function call overhead we optimize the fast paths where
         # the DSON key separator is ": " or just ":".

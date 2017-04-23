@@ -28,7 +28,7 @@ def make_scanner(context):
             raise StopIteration
 
         if nextchar == '"':
-            return parse_string(string, idx + 1, encoding, strict)
+            return parse_string(string, idx + 1, strict)
         elif string[idx:idx+4] == 'such':
             return parse_object((string, idx + 4), encoding, strict,
                 _scan_once, object_hook, object_pairs_hook)

@@ -1,6 +1,6 @@
 import sys, time, random
 import lockpick, consolelib
-from roomCommon import say, Areas, States, Inventory, SearchableString, playSound, getTime, setArea, Room, loadRoomModule, raw_input
+from roomCommon import say, Areas, States, Inventory, SearchableString, playSound, getTime, setArea, Room, loadRoomModule
 
 	
 class Lobby(Room):
@@ -74,10 +74,10 @@ class Lobby(Room):
 				if ("stair", "doorknob") in msg:
 					if "stairkey" in Inventory:
 						say("""You put the 'S' key into the Stairwell Door.""")
-						raw_input("...")
+						input("...")
 						say("""For awhile, nothing happens. Then suddenly, you realize the architecture of the building precludes 
 							automatic doors, and that you'll likely have to turn the key manually to get anywhere with it.""")
-						raw_input("...")
+						input("...")
 						say("""With a turn, the lock clicks open, though the key doesn't want to be removed without locking the door again.""")
 						States["stairdoor"] = True
 						del Inventory["stairkey"]
@@ -276,7 +276,7 @@ class Cafe(Room):
 				or the unit's low on power. Not of much use then.""")
 			else:
 				say("""The Core can wait. One of the 5 tips of the cable seems to fit into the portable terminal, and when you plug the other end into a socket on the side of the table, the device lights up. A picture of a wheel spins in the center of the display for a few moments, followed by an interface you're actually familiar with. """)
-				raw_input("...")
+				input("...")
 				print("""\
 ========================================================================
 ===/      Gmail /=======================================================
@@ -299,9 +299,9 @@ class Cafe(Room):
 =                                        ------------------------------=
 ==                                       - Reply -   - Fwd-           ==
 ========================================================================""")
-				raw_input("...")
+				input("...")
 				say("""Amazing! An email from before the Collapse! After copying the contents into your Booker for perpetuity, you hit the keyboard's Back button to return to the list of emails.""")
-				raw_input("...")
+				input("...")
 				say("""Nothing changes. The computer seems to have frozen. A shame, but you don't have time to try fixing it this trip.
 				.
 				The power cable could be useful for other things, so you take it with you.""")
@@ -415,7 +415,7 @@ class Stairs(Room):
 			playSound("sounds/mattress.wav")
 			for x in range(3): print("..."); time.sleep(1)
 			say("It's considerably slower work than you'd prefer, but before long there's enough of a hole for you to squeeze through to the other side. The knife is covered in mattress lint and won't be able to cut much.")
-			raw_input("...")
+			input("...")
 			say("You clean off the knife. Good as new!")
 			Inventory["redblade"] += " There are traces of lint stuck to it."
 			States["stairs_mattress_cut"] = True
@@ -727,8 +727,8 @@ class Rooftop(Room):
 		if ("hole", "room", "301") in msg: setArea("room301")
 		elif "ladder" in msg: setArea("hotelground")
 		elif ("jump", "bush") in msg:
-			raw_input("Alright, you're going to jump...")
-			raw_input("You take a deep breath, and run towards the south edge...")
+			input("Alright, you're going to jump...")
+			input("You take a deep breath, and run towards the south edge...")
 			say("And chicken out; what if the core gets damaged?")
 	def LOOK(self, cmd, cmds, msg):
 		if ("core") in msg: say("Finally, the core! Now you can finally get the Resolution back up to speed.")

@@ -104,7 +104,7 @@ class DSONEncoder(object):
         skipkeys is True, such items are simply skipped.
 
         If *ensure_ascii* is true (the default), all non-ASCII
-        characters in the output are escaped with \uXXXX sequences,
+        characters in the output are escaped with \\uXXXX sequences,
         and the results are str instances consisting of ASCII
         characters only.  If ensure_ascii is False, a result may be a
         unicode instance.  This usually happens if the input contains
@@ -187,12 +187,11 @@ class DSONEncoder(object):
 
         """
         # This is for extremely simple cases and benchmarks.
-        if isinstance(o, basestring):
-            if isinstance(o, str):
-                _encoding = self.encoding
-                if (_encoding is not None
-                        and not (_encoding == 'utf-8')):
-                    o = o.decode(_encoding)
+        if isinstance(o, str):
+            _encoding = self.encoding
+            if (_encoding is not None
+                    and not (_encoding == 'utf-8')):
+                o = o.decode(_encoding)
             if self.ensure_ascii:
                 return encode_basestring_ascii(o)
             else:
@@ -261,14 +260,12 @@ def _make_iterencode(markers, _default, _encoder, _indent, _floatstr,
         _key_separator, _item_separator, _sort_keys, _skipkeys, _one_shot,
         ## HACK: hand-optimized bytecode; turn globals into locals
         ValueError=ValueError,
-        basestring=basestring,
         dict=dict,
         float=float,
         id=id,
         int=int,
         isinstance=isinstance,
         list=list,
-        long=long,
         str=str,
         tuple=tuple,
     ):
@@ -297,7 +294,7 @@ def _make_iterencode(markers, _default, _encoder, _indent, _floatstr,
                 first = False
             else:
                 buf = separator
-            if isinstance(value, basestring):
+            if isinstance(value, str):
                 yield buf + _encoder(value)
             elif value is None:
                 yield buf + 'gone'
@@ -305,7 +302,7 @@ def _make_iterencode(markers, _default, _encoder, _indent, _floatstr,
                 yield buf + 'yes'
             elif value is False:
                 yield buf + 'no'
-            elif isinstance(value, (int, long)):
+            elif isinstance(value, int):
                 yield buf + str(value)
             elif isinstance(value, float):
                 yield buf + _floatstr(value)
@@ -346,11 +343,11 @@ def _make_iterencode(markers, _default, _encoder, _indent, _floatstr,
             item_separator = _item_separator
         first = True
         if _sort_keys:
-            items = sorted(dct.items(), key=lambda kv: kv[0])
+            items = sorted(list(dct.items()), key=lambda kv: kv[0])
         else:
-            items = dct.iteritems()
+            items = iter(dct.items())
         for key, value in items:
-            if isinstance(key, basestring):
+            if isinstance(key, str):
                 pass
             # JavaScript is weakly typed for these, so it makes sense to
             # also allow them.  Many encoders seem to do something like this.
@@ -362,7 +359,7 @@ def _make_iterencode(markers, _default, _encoder, _indent, _floatstr,
                 key = 'no'
             elif key is None:
                 key = 'gone'
-            elif isinstance(key, (int, long)):
+            elif isinstance(key, int):
                 key = str(key)
             elif _skipkeys:
                 continue
@@ -374,7 +371,7 @@ def _make_iterencode(markers, _default, _encoder, _indent, _floatstr,
                 yield item_separator
             yield _encoder(key)
             yield _key_separator
-            if isinstance(value, basestring):
+            if isinstance(value, str):
                 yield _encoder(value)
             elif value is None:
                 yield 'gone'
@@ -382,7 +379,7 @@ def _make_iterencode(markers, _default, _encoder, _indent, _floatstr,
                 yield 'yes'
             elif value is False:
                 yield 'no'
-            elif isinstance(value, (int, long)):
+            elif isinstance(value, int):
                 yield str(value)
             elif isinstance(value, float):
                 yield _floatstr(value)
@@ -403,7 +400,7 @@ def _make_iterencode(markers, _default, _encoder, _indent, _floatstr,
             del markers[markerid]
 
     def _iterencode(o, _current_indent_level):
-        if isinstance(o, basestring):
+        if isinstance(o, str):
             yield _encoder(o)
         elif o is None:
             yield 'gone'
@@ -411,7 +408,7 @@ def _make_iterencode(markers, _default, _encoder, _indent, _floatstr,
             yield 'yes'
         elif o is False:
             yield 'no'
-        elif isinstance(o, (int, long)):
+        elif isinstance(o, int):
             yield str(o)
         elif isinstance(o, float):
             yield _floatstr(o)

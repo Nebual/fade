@@ -17,9 +17,9 @@ def winchr(num):
 		Windows's Terminal's extended ASCII is quite nonstandard...
 	"""
 	if sys.platform != 'win32' and num < 32:
-		if num == 1: return unichr(9786)
-		elif num == 5: return unichr(9827)
-	return unicode(chr(num), "CP850")
+		if num == 1: return chr(9786)
+		elif num == 5: return chr(9827)
+	return str(chr(num), "CP850")
 
 UP_ARROW = "\xe0H"
 DOWN_ARROW = "\xe0P"
@@ -36,14 +36,11 @@ def clear():
 	else:
 		os.system(os.name == "nt" and "cls" or "clear")
 
-try:
+if sys.platform == 'win32':
 	import msvcrt
-	#Okay the import succeeded, we're Windows
 	def getch():
-		ch = msvcrt.getch()
-		if ord(ch) == 224:
-			ch += msvcrt.getch()
-		elif ord(ch) == 3:
+		ch = msvcrt.getwch()
+		if ord(ch) == 3:
 			raise KeyboardInterrupt
 		return ch
 	
@@ -58,7 +55,7 @@ try:
 			return None
 		else:
 			return getch()
-except ImportError: #Linux
+else: #Linux
 	import sys, tty, termios, select
 	
 	def getch():
@@ -117,7 +114,7 @@ class mystdout(object):
 		sys.stdout = self
 		self.suppress = suppress
 	def write(self, data):
-		self.file.write(unicode(data))
+		self.file.write(data)
 		if not self.suppress: self.stdout.write(data)
 	def close(self):
 		s = self.file.getvalue()

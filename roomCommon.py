@@ -3,7 +3,7 @@ import re, textwrap
 
 import lockpick, consolelib
 
-__all__ = ["say", "Areas", "States", "Inventory", "SearchableString", "playSound", "getTime", "setArea", "Room", "loadRoomModule", "raw_input"]
+__all__ = ["say", "Areas", "States", "Inventory", "SearchableString", "playSound", "getTime", "setArea", "Room", "loadRoomModule"]
 
 Areas = {}
 States = {"area": "lobby"}
@@ -27,12 +27,6 @@ def wrap(s):
 	return out[:-1]
 def say(s):
 	print(wrap(s))
-
-if sys.version_info >= (3,):
-	def raw_input(s): return input(s)
-else:
-	raw_input = raw_input
-	
 
 class SearchableString(str):
 	"""A subclass of str, that lets you do
@@ -229,9 +223,9 @@ def openMap(mapname):
 			for liney, line in enumerate(layout.split("\n")):
 				for linex, char in enumerate(line):
 					Map[liney + layoutY][linex + layoutX] = char
-	print " " + "".join([x % 10 == 0 and str(x).ljust(10) or "" for x in range(mapSizeX)])
+	print(" " + "".join([x % 10 == 0 and str(x).ljust(10) or "" for x in range(mapSizeX)]))
 	for line in Map:
-		print "".join(line)
+		print("".join(line))
 
 class Room(object):
 	def describe(self): say(""" """)
