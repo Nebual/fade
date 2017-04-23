@@ -14,14 +14,14 @@ def parseCMD(msg):
 	if cmd == "load":
 		SaveName = len(cmds) > 1 and cmds[1] or input("Save name: >")
 		if SaveName:
-			NewStates, NewInventory = dson.load(open(SaveName+".dson","r"))
+			NewStates, NewInventory = dson.load(open(getSaveDir() + SaveName+".dson","r"))
 			States.clear(); Inventory.clear()
 			States.update(NewStates); Inventory.update(NewInventory)
 			print("== Progress loaded from '"+SaveName+".dson' ==")
 	elif cmd == "save":
 		SaveName = len(cmds) > 1 and cmds[1] or input("Save name: >")
 		if SaveName:
-			dson.dump((States, Inventory), open(SaveName+".dson","w"), indent=2)
+			dson.dump((States, Inventory), open(getSaveDir() + SaveName+".dson","w"), indent=2)
 			print("== Progress saved to '"+SaveName+".dson' ==")
 	elif cmd in ("clear", "cls"):
 		consolelib.clear()
@@ -107,6 +107,12 @@ def main():
 		else:
 			#Nothing was printed, so the command/args pair wasn't found
 			notFound(msg.split())
+
+def getSaveDir():
+	saveDir = os.path.dirname(os.path.abspath(__file__)) + "/saves/"
+	if not os.path.exists(saveDir):
+		os.makedirs(saveDir)
+	return saveDir
 
 if __name__ == "__main__":
 	parser = OptionParser()
@@ -194,6 +200,10 @@ if __name__ == "__main__":
 		WasKBInterrupt = True
 	finally:
 		if not WasKBInterrupt:
-			print("Eeek we crashed! Emergency saving to crash.dson...")
-			dson.dump((States, Inventory), open("crash.dson","w"))
+			print("Eeek we crashed! Emergency saving to crash.dson... ", end="")
+			dson.dump((States, Inventory), open(getSaveDir() + "crash.dson","w"), indent=2)
 			print("Save successful! Printing stacktrace:\n")
+		else:
+			print("Exiting; saving progress to last.dson... ", end="")
+			dson.dump((States, Inventory), open(getSaveDir() + "last.dson", "w"), indent=2)
+			print("Done. Seeya!")
