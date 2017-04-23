@@ -1,6 +1,6 @@
 import sys, time, random
 import lockpick, consolelib
-from roomCommon import say, Areas, States, Inventory, SearchableString, playSound, getTime, setArea, Room, loadRoomModule
+from roomCommon import say, Areas, States, Inventory, playSound, getTime, setArea, Room, loadRoomModule, parseCMD
 
 	
 class Lobby(Room):
@@ -267,7 +267,7 @@ class Cafe(Room):
 		elif ("charge", "black", "cable") in msg and "charger" in Inventory:
 			if ("computer", "laptop", "terminal") in msg:
 				States["laptop_cafe_powered"] = True
-				self.USE("","",SearchableString("computer"))
+				parseCMD("use computer")
 			else: say("Use the cable with what?")
 		elif ("computer", "laptop", "terminal") in msg:
 			if "laptop_cafe_powered" not in States:
@@ -390,6 +390,22 @@ class Stairs(Room):
 				del States["flashlighton"]
 				setArea("floor3")
 			else: say("There remains a large mattress between you and the third floor door.")
+		elif "up" in msg:
+			if States["lastarea"] == "lobby":
+				say("You ascend a single set of stairs.")
+				parseCMD("go second")
+			elif States["lastarea"] == "floor2":
+				say("You ascend a single set of stairs.")
+				parseCMD("go third")
+			else: say("You don't think you can go much more up than this.")
+		elif "down" in msg:
+			if States["lastarea"] == "floor2":
+				say("You descend a single set of stairs.")
+				parseCMD("go lobby")
+			elif States["lastarea"] == "floor3":
+				say("You descend a single set of stairs.")
+				parseCMD("go floor2")
+			else: say("You're already at the base of the stairwell")
 	def LOOK(self, cmd, cmds, msg):
 		if "fish" in msg and "stairs_fish" not in States: say("The fish appears to be dead. More relevently, it was never alive. You're unsure why anyone would make such a useless facsimile, perhaps it was once a children's toy. You consider that it wouldn't take up much space in your backpack, before shaking your head at the very thought.")
 		elif "stair" in msg: say("The stairs look quite decrepit, and after a few steps, your feet agree.")
@@ -756,8 +772,8 @@ class Rooftop(Room):
 				States["core_obtained"] = True
 		else: say("There's nothing to get up here, besides respiratory problems.")
 	def USE(self, cmd, cmds, msg):
-		if "ladder" in msg: self.GO("","",SearchableString("ladder"))
-		elif "jump" in msg: self.GO("","",SearchableString("jump"))
+		if "ladder" in msg: parseCMD("go ladder")
+		elif "jump" in msg: parseCMD("go jump")
 
 class HotelGround(Room):
 	def describe(self): say("You're outside the Grand Luxury Hotel. With the Core in hand, you're ready to restore the Resolution and hopefully get out of this red zone. . The hotel's lobby doors are behind you, and ahead lies a wide black riverway of stone marked US97.")

@@ -3,7 +3,7 @@ import re, textwrap
 
 import lockpick, consolelib
 
-__all__ = ["say", "Areas", "States", "Inventory", "SearchableString", "playSound", "getTime", "setArea", "Room", "loadRoomModule"]
+__all__ = ["say", "Areas", "States", "Inventory", "SearchableString", "playSound", "getTime", "setArea", "Room", "loadRoomModule", "parseCMD"]
 
 Areas = {}
 States = {"area": "lobby"}
@@ -47,6 +47,9 @@ else:
 	def playSound(filepath):
 		winsound.PlaySound(filepath, winsound.SND_FILENAME | winsound.SND_ASYNC | winsound.SND_NODEFAULT)
 
+_parseCMD = lambda x: x # Replaced by fade.py's parseCMD()
+def parseCMD(msg):
+	_parseCMD(msg)
 
 GO = ("enter", "go", "goto")
 LOOK = ("examine", "look", "view")

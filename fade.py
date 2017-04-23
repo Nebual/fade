@@ -9,7 +9,10 @@ from roomCommon import say, SearchableString, playSound, getTime, setArea, openM
 import hotel, resolution
 
 def parseCMD(msg):
-	cmds = msg.split(); cmd = SearchableString(len(cmds) > 0 and cmds[0] or "")
+	msg = SearchableString(msg.lower())
+	cmds = msg.split()
+	cmd = SearchableString(len(cmds) > 0 and cmds[0] or "")
+
 	curArea = Areas[States["area"]]
 	if cmd == "load":
 		SaveName = len(cmds) > 1 and cmds[1] or input("Save name: >")
@@ -93,10 +96,11 @@ def parseCMD(msg):
 	elif ("hello", "hi", "hey") in cmd: say("Ello.")
 	elif ("yes") in cmd: say("Nope.")
 	elif ("no") in cmd: say("Yep.")
+roomCommon._parseCMD = parseCMD
 
 def main():
 	while True:
-		msg = SearchableString(input("\n["+Areas[States["area"]].__class__.__name__+"]--> ").lower())
+		msg = input("\n[" + Areas[States["area"]].__class__.__name__ + "]--> ")
 		print("")
 		
 		with consolelib.listenPrints() as printedString:
@@ -106,7 +110,7 @@ def main():
 			States["time"] += 5 #Successful actions take 5 minutes
 		else:
 			#Nothing was printed, so the command/args pair wasn't found
-			notFound(msg.split())
+			notFound(msg.lower().split())
 
 def getSaveDir():
 	saveDir = os.path.dirname(os.path.abspath(__file__)) + "/saves/"
