@@ -144,6 +144,11 @@ FAST_TEXT = False
 def setTextSpeed(fast):
 	global FAST_TEXT
 	FAST_TEXT = fast
+	
+WEB_MODE = False
+def setWebMode(web):
+	global WEB_MODE
+	WEB_MODE = web
 
 @contextlib.contextmanager
 def charByChar(speed=0.0066):

@@ -1,24 +1,28 @@
 <!DOCTYPE HTML>
 <head>
 	<title>Fade Browser Terminal</title>
-	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
 	<script>
 	$(document).ready(function() {
 		if (! ("WebSocket" in window)) WebSocket = MozWebSocket; // firefox
-		var socket = new WebSocket("ws://"+location.hostname+":8076");
+		var ws_address;
+		if (location.hostname === "nebtown.info") {
+			ws_address = "ws://gman.nebtown.info:8076";
+		} else {
+			ws_address = "ws://"+location.hostname+":8076";
+		}
+		var socket = new WebSocket(ws_address);
 
 		var consoleBox = $("#console");
 		$(window).resize(function() {
 			consoleBox.css({'height' : ($(window).height() - 105) + "px"});
 			$(".side").css({'height' : ($(window).height() - 105) + "px"});
 		}); $(window).resize();
-		
-		// open the socket
+
 		socket.onopen = function(event) {
-			//socket.send('connected\n');
+			socket.connected = true;
 
 			var curWritePos = 0;
-			// show server response
 	
 			socket.onmessage = function(e) {
 				var lines = e.data.split('\n');
@@ -70,6 +74,17 @@
 			});
 			consoleBox.focus();
 		}
+		socket.onclose = function (event) {
+			var reason;
+			if(!socket.connected) {
+				reason = "could not connect to (" + ws_address + ")"
+			} else {
+				reason = "ws" + event.code;
+			}
+
+			socket.connected = false;
+			consoleBox.val(consoleBox.val() + "\n\n  ** Fade Server Error: " + reason + "\n");
+		};
 	});
 	</script>
 	<style text="text/css">
@@ -172,5 +187,5 @@
 			i/inventory<br>
 			save [filename]<br>
 			load [filename]</div>
-	<textarea id="console" spellcheck="false"></textarea>
+	<textarea id="console" spellcheck="false" autocomplete="off"></textarea>
 </body>
